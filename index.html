@@ -22,11 +22,14 @@
       --ink:#2d1844;
       --white:#fff;
 
-      /* Sentence colours */
+      /* Handout colours */
       --subj:#b7f0c8;   /* green */
       --verb:#e6dcff;   /* purple-ish */
       --gar:#ffd9c4;    /* orange */
       --info:#dbefff;   /* blue */
+
+      --border: rgba(108,74,163,.18);
+      --dash: rgba(108,74,163,.35);
     }
 
     *{ margin:0; padding:0; box-sizing:border-box; }
@@ -44,36 +47,21 @@
       cursor:pointer;
     }
 
-    /* TOP BAR (same vibe) */
+    /* TOP BAR */
     .top-bar{
       max-width:1100px;
       margin:0 auto 10px;
       display:flex;
       align-items:center;
-      justify-content:space-between;
+      justify-content:center;
       background:var(--purple-dark);
       border-radius:999px;
-      padding:6px 12px;
+      padding:10px 14px;
       color:var(--white);
-      gap:10px;
       box-shadow: 0 10px 18px rgba(45,24,68,.12);
-    }
-    .top-bar-title{
+      text-align:center;
       font-size:1.45rem;
-      flex:1;
-      text-align:center;
-      min-height:1.4em;
-      opacity:.98;
-      padding:0 6px;
-      line-height:1.15;
-    }
-
-    .subtitle{
-      max-width:1100px;
-      margin:0 auto 14px;
-      text-align:center;
-      font-size:1.2rem;
-      opacity:0.85;
+      line-height:1.1;
     }
 
     .instruction-box{
@@ -121,107 +109,123 @@
       font-size:1.2rem;
     }
 
+    .board{
+      width:min(980px, 100%);
+      margin:0 auto;
+      background: rgba(255,255,255,.35);
+      border:2px solid rgba(108,74,163,.10);
+      border-radius:22px;
+      padding:14px 14px 10px;
+    }
+
+    .sectionTitle{
+      text-align:left;
+      font-size:1.35rem;
+      color: var(--purple-dark);
+      margin: 6px 2px 10px;
+      opacity:.95;
+    }
+
+    .row{
+      display:flex;
+      justify-content:center;
+      align-items:flex-end;
+      flex-wrap:wrap;
+      gap:14px;
+      margin: 0 auto 6px;
+    }
+
+    /* Handout-style pill stack */
+    .stack{
+      width:min(240px, 46vw);
+      min-width: 150px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+    }
+
+    .wordPill{
+      width:100%;
+      border-radius:999px;
+      padding:14px 14px;
+      font-size:1.9rem;
+      text-align:center;
+      border:2px solid rgba(0,0,0,.06);
+      background: var(--white);
+      user-select:none;
+      word-break:break-word;
+    }
+
+    .roleLabel{
+      font-size:1.25rem;
+      opacity:.85;
+      text-align:center;
+      min-height: 1.2em;
+    }
+
+    .numCircle{
+      width:44px;
+      height:44px;
+      border-radius:999px;
+      border:3px solid #000;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.4rem;
+      line-height:1;
+    }
+
+    .subj{ background: var(--subj); }
+    .verb{ background: var(--verb); }
+    .gar { background: var(--gar); }
+    .info{ background: var(--info); }
+
+    /* draggable top pills */
+    .bankPill{
+      cursor:grab;
+    }
+    .bankPill:active{ transform: scale(.99); }
+    .bankPill.used{
+      opacity:.25;
+      filter:grayscale(.2);
+      cursor:default;
+    }
+    .selected{
+      outline: 5px solid rgba(108,74,163,.22);
+      outline-offset: 3px;
+    }
+
+    /* target drop slots */
+    .drop{
+      border: 2px dashed var(--dash);
+      background: rgba(255,255,255,.75);
+    }
+    .drop.over{
+      outline:4px solid rgba(108,74,163,.18);
+      outline-offset:2px;
+    }
+    .drop.filled{
+      border-style:solid;
+      background: var(--white);
+    }
+
+    .punct{
+      font-size:2.4rem;
+      color: var(--purple-dark);
+      padding: 0 6px 10px;
+      line-height:1;
+    }
+
     .feedback{
-      margin-top:10px;
+      margin: 10px auto 2px;
       min-height:1.4em;
       font-size:1.35rem;
       text-align:center;
     }
     .feedback.ok{ color:#117a3a; }
     .feedback.bad{ color:#b02323; }
-
-    /* Sentence area */
-    .sent-area{
-      width:min(980px, 100%);
-      margin: 0 auto;
-    }
-
-    .sent-caption{
-      text-align:center;
-      font-size:1.25rem;
-      opacity:.85;
-      margin: 4px 0 8px;
-    }
-
-    .sent-row{
-      display:flex;
-      justify-content:center;
-      align-items:flex-end;
-      gap:12px;
-      flex-wrap:wrap;
-      margin: 0 auto 10px;
-    }
-
-    .slotStack{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:6px;
-      width:min(220px, 45vw);
-      min-width: 140px;
-    }
-
-    .sent-slot{
-      width:100%;
-      min-height:76px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      border-radius:18px;
-      border:2px dashed rgba(108,74,163,.45);
-      background: var(--white);
-      padding:10px;
-      font-size:1.55rem;
-      user-select:none;
-      word-break:break-word;
-    }
-    .sent-slot.locked{
-      border-style:solid;
-      border-color: rgba(108,74,163,.18);
-      opacity:.95;
-    }
-    .sent-slot.filled{ border-style:solid; }
-    .sent-slot.over{
-      outline:4px solid rgba(108,74,163,.18);
-      outline-offset:2px;
-    }
-
-    .posnum{ font-size:1.15rem; opacity:.7; }
-
-    .punct{
-      font-size:2.2rem;
-      color: var(--purple-dark);
-      padding: 0 2px 10px;
-      line-height:1;
-    }
-
-    .bank{
-      width:min(980px, 100%);
-      margin: 12px auto 14px;
-      display:flex;
-      justify-content:center;
-      flex-wrap:wrap;
-      gap:12px;
-    }
-
-    .word{
-      padding:12px 18px;
-      border-radius:18px;
-      font-size:1.55rem;
-      border:2px solid rgba(0,0,0,.08);
-      user-select:none;
-      cursor:grab;
-      background: var(--white);
-      word-break:break-word;
-      max-width: 92vw;
-    }
-    .word:active{ transform:scale(.98); }
-
-    .subj{ background: var(--subj); }
-    .verb{ background: var(--verb); }
-    .gar { background: var(--gar); }
-    .info{ background: var(--info); }
 
     .flash-green{ animation: flashGreen .25s ease; }
     .flash-red{ animation: flashRed .25s ease; }
@@ -239,57 +243,46 @@
     .magic{ animation: magicPop .45s ease; }
     @keyframes magicPop{
       0%   { transform:scale(1); filter:brightness(1); }
-      35%  { transform:scale(1.10); filter:brightness(1.18); }
+      35%  { transform:scale(1.08); filter:brightness(1.18); }
       100% { transform:scale(1); filter:brightness(1); }
+    }
+
+    @media (max-width:520px){
+      .wordPill{ font-size:1.65rem; padding:12px 12px; }
+      .numCircle{ width:40px; height:40px; font-size:1.25rem; }
+      .punct{ font-size:2.1rem; }
     }
   </style>
 </head>
 
 <body>
-  <div class="top-bar">
-    <div class="top-bar-title">P4 – Sazstruktur – Inversioun</div>
-  </div>
-
-  <div class="subtitle">Ausso ↔ Fro (Ech ↔ Du)</div>
+  <div class="top-bar">P4 – Sazstruktur mat “gär”</div>
 
   <div class="instruction-box">
-    Uewen gesäis du e Saz (Ausso oder Fro). Drënner zéiss du d’Wierder an d’Këschten (1–4) fir déi aner Form ze bauen.
-    D’Punktuatioun steet nieft de Këschten. De Verb an de Sujet “zaubere” an déi richteg Form.
+    Lies de Saz a kuck der d'Sazdeeler un. Verwandel de Saz an eng Fro oder d'Fro an e Saz andeems du d'Sazdeeler op déi richteg Plaz zitts.
   </div>
 
   <div class="row-center">
     <button class="secondary" id="resetBtn">Reset</button>
+    <button class="secondary" id="checkBtn">Kontrolléieren</button>
     <button class="primary" id="nextBtn">Nächst Beispill</button>
     <div class="pill" id="prog">1 / …</div>
   </div>
 
-  <div class="sent-area">
-    <div class="sent-caption" id="givenCaption">Ginn Saz</div>
+  <div class="board">
+    <div class="sectionTitle" id="topTitle">Uewen</div>
+    <div class="row" id="topRow"></div>
 
-    <div class="sent-row" id="givenRow">
-      <div class="slotStack"><div class="sent-slot locked" id="given1"></div><div class="posnum">1</div></div>
-      <div class="slotStack"><div class="sent-slot locked" id="given2"></div><div class="posnum">2</div></div>
-      <div class="slotStack"><div class="sent-slot locked" id="given3"></div><div class="posnum">3</div></div>
-      <div class="slotStack" id="givenStack4"><div class="sent-slot locked" id="given4"></div><div class="posnum">4</div></div>
-      <div class="punct" id="givenPunct">.</div>
-    </div>
+    <div style="height:10px;"></div>
 
-    <div class="sent-caption" id="targetCaption">Du méchs déi aner Form</div>
+    <div class="sectionTitle" id="bottomTitle">Ënnen</div>
+    <div class="row" id="bottomRow"></div>
 
-    <div class="sent-row" id="targetRow">
-      <div class="slotStack"><div class="sent-slot" id="t1" data-slot="1"></div><div class="posnum">1</div></div>
-      <div class="slotStack"><div class="sent-slot" id="t2" data-slot="2"></div><div class="posnum">2</div></div>
-      <div class="slotStack"><div class="sent-slot" id="t3" data-slot="3"></div><div class="posnum">3</div></div>
-      <div class="slotStack" id="targetStack4"><div class="sent-slot" id="t4" data-slot="4"></div><div class="posnum">4</div></div>
-      <div class="punct" id="targetPunct">?</div>
-    </div>
-
-    <div class="bank" id="bank"></div>
     <div class="feedback" id="fb"></div>
   </div>
 
 <script>
-/* ===================== SMALL HELPERS ===================== */
+/* ===================== HELPERS ===================== */
 function shuffle(arr){
   const a = arr.slice();
   for(let i=a.length-1;i>0;i--){
@@ -313,14 +306,13 @@ function clearFb(){
   el.textContent = "";
   el.className = "feedback";
 }
-function animTransform(slotEl, newText){
-  slotEl.classList.remove("magic");
-  void slotEl.offsetWidth;
-  slotEl.classList.add("magic");
-  setTimeout(()=>{ slotEl.textContent = newText; }, 170);
+function magic(el){
+  el.classList.remove("magic");
+  void el.offsetWidth;
+  el.classList.add("magic");
 }
 
-/* ===================== VERB DATA (same as your set) ===================== */
+/* ===================== CONJUGATION (ECH/DU) ===================== */
 const IRREG = {
   "fueren":   { ech:"fueren", du:"fiers" },
   "danzen":   { ech:"danzen", du:"danz"  },
@@ -346,206 +338,326 @@ function conjDu(inf){
   return stemOf(inf) + "s";
 }
 
-/* ===================== SENTENCE EXAMPLES ===================== */
+/* ===================== EXAMPLES ===================== */
 const EX = [
-  { verb:"spillen", gar:"gär", info:"Fussball" },
-  { verb:"kucken", gar:"net gär", info:"Tëlee" },
-  { verb:"lauschteren", gar:"gär", info:"Musek" },
-  { verb:"liesen", gar:"gär", info:null },
-  { verb:"schwammen", gar:"net gär", info:null },
-  { verb:"danzen", gar:"gär", info:null },
-  { verb:"lafen", gar:"gär", info:null },
-  { verb:"maachen", gar:"net gär", info:"Sport" },
-  { verb:"telefonéieren", gar:"gär", info:null },
-  { verb:"raschten", gar:"net gär", info:null },
-  { verb:"kachen", gar:"gär", info:null },
-  { verb:"spadséieren", gar:"gär", info:null },
-  { verb:"molen", gar:"net gär", info:null },
-  { verb:"léieren", gar:"gär", info:null },
-  { verb:"boxen", gar:"net gär", info:null }
+  { verb:"schwammen", gar:"gär",     info:null },
+  { verb:"spillen",   gar:"gär",     info:"Fussball" },
+  { verb:"kucken",    gar:"net gär", info:"Tëlee" },
+  { verb:"lauschteren",gar:"gär",    info:"Musek" },
+  { verb:"liesen",    gar:"gär",     info:null },
+  { verb:"danzen",    gar:"net gär", info:null },
+  { verb:"lafen",     gar:"gär",     info:null },
+  { verb:"maachen",   gar:"net gär", info:"Sport" },
+  { verb:"telefonéieren",gar:"gär",  info:null },
+  { verb:"raschten",  gar:"net gär", info:null },
+  { verb:"kachen",    gar:"gär",     info:null },
+  { verb:"spadséieren",gar:"gär",    info:null },
+  { verb:"molen",     gar:"net gär", info:null },
+  { verb:"léieren",   gar:"gär",     info:null },
+  { verb:"boxen",     gar:"net gär", info:null }
 ];
 
 let order = shuffle(EX);
 let pos = 0;
 let current = null;
-let givenMode = "AFF"; // "AFF" or "Q"
+
+// givenMode: "AFF" (Ech ... .) OR "Q" (Verb du ... ?)
+let givenMode = "AFF";
 let needInfo = false;
 
-let placed = {1:null,2:null,3:null,4:null};
+// click-to-place support
+let selectedTile = null;
 
-/* ===================== BUILD UI ===================== */
-function setGiven(){
-  const subj = (givenMode==="AFF") ? "Ech" : "Du";
-  const verb = (givenMode==="AFF") ? conjEch(current.verb) : conjDu(current.verb);
+// placed map by slot index in bottom (1..4)
+let placed = {1:null,2:null,3:null,4:null}; // {token, rawText}
 
-  document.getElementById("given1").textContent = subj;
-  document.getElementById("given2").textContent = verb;
-  document.getElementById("given3").textContent = current.gar;
-
+/* ===================== GRAMMAR RULES FROM HANDOUT ===================== */
+function topStructure(){
+  // top shows either:
+  // AFF: 1 Sujet (Ech), 2 Verb (ech-form), 3 (net) gär, 4 Info?
+  // Q  : 1 Verb (du-form), 2 Sujet (du), 3 (net) gär, 4 Info?
+  const base = [
+    givenMode==="AFF"
+      ? {token:"SUBJ", cls:"subj", label:"Sujet", text:"Ech"}
+      : {token:"VERB", cls:"verb", label:"Verb",  text:conjDu(current.verb)},
+    givenMode==="AFF"
+      ? {token:"VERB", cls:"verb", label:"Verb",  text:conjEch(current.verb)}
+      : {token:"SUBJ", cls:"subj", label:"Sujet", text:"du"},
+    {token:"GAR", cls:"gar", label:"(net) gär", text:current.gar}
+  ];
   if(needInfo){
-    document.getElementById("given4").textContent = current.info;
-  }else{
-    document.getElementById("given4").textContent = "";
+    base.push({token:"INFO", cls:"info", label:"Informatioun", text:current.info});
   }
-
-  document.getElementById("givenPunct").textContent = (givenMode==="AFF") ? "." : "?";
-  document.getElementById("targetPunct").textContent = (givenMode==="AFF") ? "?" : ".";
-  document.getElementById("givenCaption").textContent  = (givenMode==="AFF") ? "Ginn Saz: Ausso" : "Ginn Saz: Fro";
-  document.getElementById("targetCaption").textContent = (givenMode==="AFF") ? "Du méchs: Fro" : "Du méchs: Ausso";
+  return base;
 }
 
-function buildBank(){
-  const bank = document.getElementById("bank");
-  bank.innerHTML = "";
-
-  const subjText = (givenMode==="AFF") ? "Ech" : "Du";
-  const verbText = (givenMode==="AFF") ? conjEch(current.verb) : conjDu(current.verb);
-
-  bank.appendChild(makeTile(subjText, "subj", "SUBJ"));
-  bank.appendChild(makeTile(verbText, "verb", "VERB"));
-  bank.appendChild(makeTile(current.gar, "gar", "GAR"));
+function targetStructure(){
+  // bottom must be the OTHER form:
+  // if top AFF -> bottom Q: 1 Verb(du), 2 Sujet(du), 3 (net) gär, 4 Info?
+  // if top Q   -> bottom AFF: 1 Sujet(Ech), 2 Verb(ech), 3 (net) gär, 4 Info?
+  const targetIsQuestion = (givenMode==="AFF");
+  const base = [
+    targetIsQuestion
+      ? {token:"VERB", cls:"verb", label:"Verb", text:conjDu(current.verb)}
+      : {token:"SUBJ", cls:"subj", label:"Sujet", text:"Ech"},
+    targetIsQuestion
+      ? {token:"SUBJ", cls:"subj", label:"Sujet", text:"du"}
+      : {token:"VERB", cls:"verb", label:"Verb", text:conjEch(current.verb)},
+    {token:"GAR", cls:"gar", label:"(net) gär", text:current.gar}
+  ];
   if(needInfo){
-    bank.appendChild(makeTile(current.info, "info", "INFO"));
+    base.push({token:"INFO", cls:"info", label:"Informatioun", text:current.info});
   }
+  return base;
 }
 
-function makeTile(text, cls, token){
-  const d = document.createElement("div");
-  d.className = `word ${cls}`;
-  d.textContent = text;
-  d.draggable = true;
-  d.dataset.token = token;
-  d.dataset.value = text;
-  d.addEventListener("dragstart", (e)=>{
-    e.dataTransfer.setData("text/plain", JSON.stringify({token, value:text}));
+function topPunct(){ return givenMode==="AFF" ? "." : "?"; }
+function bottomPunct(){ return givenMode==="AFF" ? "?" : "."; }
+
+/* ===================== UI BUILD ===================== */
+function makeStackPill({cls,label,text,token}, number, {draggable=false, id=null, isDrop=false} = {}){
+  const stack = document.createElement("div");
+  stack.className = "stack";
+
+  const pill = document.createElement("div");
+  pill.className = `wordPill ${cls} ${draggable ? "bankPill" : ""} ${isDrop ? "drop" : ""}`;
+  pill.textContent = text;
+  if(id) pill.id = id;
+
+  // store token/text for drag
+  pill.dataset.token = token;
+  pill.dataset.raw = text;
+
+  if(draggable){
+    pill.draggable = true;
+    pill.addEventListener("dragstart", (e)=>{
+      if(pill.classList.contains("used")) return e.preventDefault();
+      e.dataTransfer.setData("text/plain", JSON.stringify({token, raw:text, srcId: pill.id}));
+    });
+
+    // click-to-select
+    pill.addEventListener("click", ()=>{
+      if(pill.classList.contains("used")) return;
+      if(selectedTile && selectedTile !== pill){
+        selectedTile.classList.remove("selected");
+      }
+      selectedTile = pill;
+      pill.classList.toggle("selected");
+      if(!pill.classList.contains("selected")) selectedTile = null;
+    });
+  }
+
+  const role = document.createElement("div");
+  role.className = "roleLabel";
+  role.textContent = label;
+
+  const num = document.createElement("div");
+  num.className = "numCircle";
+  num.textContent = String(number);
+
+  stack.appendChild(pill);
+  stack.appendChild(role);
+  stack.appendChild(num);
+
+  return stack;
+}
+
+function renderTop(){
+  const topRow = document.getElementById("topRow");
+  topRow.innerHTML = "";
+
+  const struct = topStructure();
+
+  // title
+  document.getElementById("topTitle").textContent =
+    givenMode==="AFF" ? "Sazstruktur (Ausso)" : "Frostruktur (Fro)";
+
+  struct.forEach((item, idx)=>{
+    const id = `bank_${idx+1}`;
+    const stack = makeStackPill(item, idx+1, {draggable:true, id});
+    topRow.appendChild(stack);
   });
-  return d;
+
+  // punctuation
+  const p = document.createElement("div");
+  p.className = "punct";
+  p.textContent = topPunct();
+  topRow.appendChild(p);
 }
 
-function removeFromBank(token, value){
-  const bank = document.getElementById("bank");
-  const tiles = Array.from(bank.querySelectorAll(".word"));
-  const t = tiles.find(x => x.dataset.token===token && x.dataset.value===value);
-  if(t) t.remove();
+function renderBottom(){
+  const bottomRow = document.getElementById("bottomRow");
+  bottomRow.innerHTML = "";
+
+  const struct = targetStructure();
+
+  document.getElementById("bottomTitle").textContent =
+    givenMode==="AFF" ? "Frostruktur (du)" : "Sazstruktur (ech)";
+
+  // Create empty drop slots in target order
+  struct.forEach((item, idx)=>{
+    const slotId = `slot_${idx+1}`;
+    const stack = makeStackPill(
+      {cls:item.cls, label:item.label, text:String(idx+1), token:item.token},
+      idx+1,
+      {draggable:false, id:slotId, isDrop:true}
+    );
+
+    const pill = stack.querySelector(".wordPill");
+    pill.dataset.slot = String(idx+1);
+    pill.dataset.expected = item.token;
+
+    // drag events
+    pill.addEventListener("dragover", (e)=>{ e.preventDefault(); pill.classList.add("over"); });
+    pill.addEventListener("dragleave", ()=> pill.classList.remove("over"));
+    pill.addEventListener("drop", (e)=>{
+      e.preventDefault();
+      pill.classList.remove("over");
+      let data = null;
+      try{ data = JSON.parse(e.dataTransfer.getData("text/plain")); }catch(_){}
+      if(!data) return;
+      placeIntoSlot(pill, data.token, data.raw, data.srcId);
+    });
+
+    // click-to-place
+    pill.addEventListener("click", ()=>{
+      if(selectedTile && selectedTile.classList.contains("selected")){
+        const token = selectedTile.dataset.token;
+        const raw = selectedTile.dataset.raw;
+        const srcId = selectedTile.id;
+        placeIntoSlot(pill, token, raw, srcId);
+      }
+    });
+
+    bottomRow.appendChild(stack);
+  });
+
+  // punctuation
+  const p = document.createElement("div");
+  p.className = "punct";
+  p.textContent = bottomPunct();
+  bottomRow.appendChild(p);
 }
 
-function resetTarget(){
+function clearBottom(){
   placed = {1:null,2:null,3:null,4:null};
   clearFb();
 
-  const g4 = document.getElementById("givenStack4");
-  const t4 = document.getElementById("targetStack4");
-  g4.style.display = needInfo ? "flex" : "none";
-  t4.style.display = needInfo ? "flex" : "none";
+  // reset slots
+  const struct = targetStructure();
+  for(let i=1;i<=4;i++){
+    const el = document.getElementById(`slot_${i}`);
+    if(!el) continue;
+    el.classList.remove("filled","flash-green","flash-red","magic","over");
+    el.textContent = String(i);
 
-  ["t1","t2","t3","t4"].forEach((id, i)=>{
-    const el = document.getElementById(id);
-    el.classList.remove("filled","over","magic","flash-green","flash-red");
-    el.textContent = String(i+1);
+    // Hide slot 4 when no info
+    el.closest(".stack").style.display = (needInfo || i!==4) ? "flex" : "none";
+  }
+
+  // reset top pills visibility
+  document.querySelectorAll(".bankPill").forEach(p=>{
+    p.classList.remove("used","selected");
+    p.style.pointerEvents = "";
+    p.style.opacity = "";
+  });
+  selectedTile = null;
+
+  // also hide top stack4 if no info
+  const topStacks = document.querySelectorAll("#topRow .stack");
+  topStacks.forEach((st, idx)=>{
+    if(idx===3){ // 4th stack
+      st.style.display = needInfo ? "flex" : "none";
+    }
   });
 }
 
-function expected(){
+function transformForTarget(token){
+  // token transforms to the TARGET person/order form, regardless of where placed
   const targetIsQuestion = (givenMode==="AFF");
-  return {
-    subj: targetIsQuestion ? "Du" : "Ech",
-    verb: targetIsQuestion ? conjDu(current.verb) : conjEch(current.verb),
-    gar: "gär",
-    info: needInfo ? current.info : null
-  };
+  if(token==="SUBJ") return targetIsQuestion ? "du" : "Ech";
+  if(token==="VERB") return targetIsQuestion ? conjDu(current.verb) : conjEch(current.verb);
+  if(token==="GAR")  return current.gar;         // keep gär vs net gär
+  if(token==="INFO") return current.info;
+  return "";
 }
 
-function place(slotEl, slotNum, token, value){
+function placeIntoSlot(slotEl, token, raw, srcId){
+  // allow wrong placements (any token any slot)
   if(slotEl.classList.contains("filled")) return;
 
-  const role = slotNum===1 ? "SUBJ" : slotNum===2 ? "VERB" : slotNum===3 ? "GAR" : "INFO";
-  if(token !== role){
-    flash(slotEl, "flash-red");
-    setFb("Probéier nach eng Kéier.", false);
-    return;
-  }
+  // If src tile is already used, don't allow reuse
+  const src = document.getElementById(srcId);
+  if(!src || src.classList.contains("used")) return;
 
+  // fill slot with transformed text, keep colour of the SLOT (handout style)
   slotEl.classList.add("filled");
-  flash(slotEl, "flash-green");
+  slotEl.textContent = raw;        // show what they dragged for a moment
+  magic(slotEl);
 
-  const exp = expected();
+  // transform after short moment
+  setTimeout(()=>{
+    slotEl.textContent = transformForTarget(token);
+  }, 170);
 
-  if(token==="SUBJ"){
-    slotEl.textContent = value;
-    removeFromBank("SUBJ", value);
-    animTransform(slotEl, exp.subj);
-    placed[slotNum] = exp.subj;
-  }
-  if(token==="VERB"){
-    slotEl.textContent = value;
-    removeFromBank("VERB", value);
-    animTransform(slotEl, exp.verb);
-    placed[slotNum] = exp.verb;
-  }
-  if(token==="GAR"){
-    slotEl.textContent = value;
-    removeFromBank("GAR", value);
-    animTransform(slotEl, exp.gar);
-    placed[slotNum] = exp.gar;
-  }
-  if(token==="INFO"){
-    slotEl.textContent = value;
-    removeFromBank("INFO", value);
-    placed[slotNum] = value;
-  }
+  // mark src as used
+  src.classList.add("used");
+  src.classList.remove("selected");
+  src.draggable = false;
 
-  checkDone();
+  // store placement
+  const slotNum = Number(slotEl.dataset.slot);
+  placed[slotNum] = {token, raw};
+
+  selectedTile = null;
 }
 
-function checkDone(){
-  const exp = expected();
-  if(!placed[1] || !placed[2] || !placed[3]) return;
-  if(needInfo && !placed[4]) return;
+function checkAnswer(){
+  clearFb();
+  const struct = targetStructure(); // expected token order for bottom slots
 
-  const ok =
-    placed[1] === exp.subj &&
-    placed[2] === exp.verb &&
-    placed[3] === exp.gar &&
-    (!needInfo || placed[4] === exp.info);
-
-  if(!ok){
-    setFb("Nach net ganz. Kuck d’Nummeren 1–4.", false);
-    return;
+  // must have all required placed
+  const requiredCount = needInfo ? 4 : 3;
+  for(let i=1;i<=requiredCount;i++){
+    if(!placed[i]){
+      setFb("Fëll nach all d’Plazen aus.", false);
+      return;
+    }
   }
 
-  setFb("Richteg!", true);
+  let allOk = true;
 
-  setTimeout(()=>nextRound(), 650);
+  for(let i=1;i<=requiredCount;i++){
+    const slotEl = document.getElementById(`slot_${i}`);
+    const expectedToken = struct[i-1].token; // by order
+    const gotToken = placed[i].token;
+
+    if(gotToken === expectedToken){
+      flash(slotEl, "flash-green");
+    }else{
+      flash(slotEl, "flash-red");
+      allOk = false;
+    }
+  }
+
+  if(allOk){
+    setFb("Richteg!", true);
+  }else{
+    setFb("Nach net ganz. Probéier nach eng Kéier.", false);
+  }
 }
 
-function wireSlotsOnce(){
-  if(window.__wired) return;
-  ["t1","t2","t3","t4"].forEach((id, idx)=>{
-    const slot = document.getElementById(id);
-    slot.addEventListener("dragover", (e)=>{ e.preventDefault(); slot.classList.add("over"); });
-    slot.addEventListener("dragleave", ()=> slot.classList.remove("over"));
-    slot.addEventListener("drop", (e)=>{
-      e.preventDefault();
-      slot.classList.remove("over");
-      const data = JSON.parse(e.dataTransfer.getData("text/plain"));
-      place(slot, idx+1, data.token, data.value);
-    });
-  });
-  window.__wired = true;
-}
-
+/* ===================== ROUND CONTROL ===================== */
 function loadRound(){
-  wireSlotsOnce();
-
   current = order[pos];
   needInfo = !!current.info;
   givenMode = (Math.random() < 0.5) ? "AFF" : "Q";
 
   document.getElementById("prog").textContent = `${pos+1} / ${order.length}`;
 
-  setGiven();
-  resetTarget();
-  buildBank();
+  renderTop();
+  renderBottom();
+  clearBottom();
 }
 
 function nextRound(){
@@ -558,10 +670,13 @@ function nextRound(){
 }
 
 /* ===================== BUTTONS + INIT ===================== */
-document.getElementById("resetBtn").addEventListener("click", loadRound);
-document.getElementById("nextBtn").addEventListener("click", nextRound);
+document.getElementById("resetBtn").addEventListener("click", ()=> loadRound());
+document.getElementById("nextBtn").addEventListener("click", ()=> nextRound());
+document.getElementById("checkBtn").addEventListener("click", ()=> checkAnswer());
 
+// Initial
 loadRound();
 </script>
 </body>
 </html>
+
