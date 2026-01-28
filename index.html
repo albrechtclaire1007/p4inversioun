@@ -111,6 +111,7 @@
       padding:14px;
     }
 
+    /* ONE-LINE ROWS */
     .row{
       display:flex;
       justify-content:space-between;
@@ -174,6 +175,7 @@
     .drop.over{ outline:4px solid rgba(108,74,163,.18); outline-offset:2px; }
     .drop.filled{ border-style:solid; } /* keep colours visible */
 
+    /* punctuation aligned with pills */
     .punctCol{
       width:38px;
       flex: 0 0 38px;
@@ -289,10 +291,21 @@ function cap1(s){
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-/* ===================== ORTHO: -N RULE ===================== */
-function applyNRuleBeforeGar(echVerbForm){
+/* ===================== ORTHO: -N RULE (context sensitive) =====================
+If ech-verb ends with "en":
+- drop final -n ONLY if next word does NOT start with "n"
+So:
+  Ech lauschteren gär     -> lauschtere gär
+  Ech lauschteren net gär -> lauschteren net gär   (keep -n)
+*/
+function applyNRuleBeforeNextWord(echVerbForm, nextWord){
   if(typeof echVerbForm !== "string") return echVerbForm;
-  return echVerbForm.endsWith("en") ? echVerbForm.slice(0, -1) : echVerbForm;
+  const next = (nextWord || "").trim().toLowerCase();
+  const nextStartsWithN = next.startsWith("n");
+  if(echVerbForm.endsWith("en") && !nextStartsWithN){
+    return echVerbForm.slice(0, -1); // remove only final "n"
+  }
+  return echVerbForm;
 }
 
 /* ===================== CONJUGATION (ECH/DU) ===================== */
@@ -319,8 +332,9 @@ function conjDu(inf){
   if(IRREG[inf]) return IRREG[inf].du;
   return stemOf(inf) + "s";
 }
-function conjEchBeforeGar(inf){
-  return applyNRuleBeforeGar(conjEchBase(inf));
+/* ech form used in this game = before current.gar (gär/net gär), apply rule */
+function conjEchBeforeGar(inf, garWord){
+  return applyNRuleBeforeNextWord(conjEchBase(inf), garWord);
 }
 
 /* ===================== 25 EXAMPLES ===================== */
@@ -363,14 +377,14 @@ let placed = {1:null,2:null,3:null,4:null}; // {token, raw}
 
 /* ===================== STRUCTURES ===================== */
 function topStructure(){
-  // AFF: 1 Ech, 2 verb(ech before gär), 3 (net) gär, 4 info?
-  // Q  : 1 verb(du, capitalised), 2 du, 3 (net) gär, 4 info?
+  // AFF: 1 Ech, 2 verb(ech before gar), 3 gar, 4 info?
+  // Q  : 1 verb(du, capitalised), 2 du, 3 gar, 4 info?
   const base = [
     givenMode==="AFF"
       ? {token:"SUBJ", cls:"subj", text:"Ech"}
       : {token:"VERB", cls:"verb", text:cap1(conjDu(current.verb))},
     givenMode==="AFF"
-      ? {token:"VERB", cls:"verb", text:conjEchBeforeGar(current.verb)}
+      ? {token:"VERB", cls:"verb", text:conjEchBeforeGar(current.verb, current.gar)}
       : {token:"SUBJ", cls:"subj", text:"du"},
     {token:"GAR", cls:"gar", text:current.gar}
   ];
@@ -386,7 +400,7 @@ function targetStructure(){
       : {token:"SUBJ", cls:"subj", text:"Ech"},
     targetIsQuestion
       ? {token:"SUBJ", cls:"subj", text:"du"}
-      : {token:"VERB", cls:"verb", text:conjEchBeforeGar(current.verb)},
+      : {token:"VERB", cls:"verb", text:conjEchBeforeGar(current.verb, current.gar)},
     {token:"GAR", cls:"gar", text:current.gar}
   ];
   if(needInfo) base.push({token:"INFO", cls:"info", text:current.info});
@@ -477,7 +491,6 @@ function renderBottom(){
 
   struct.forEach((item, idx)=>{
     const slotId = `slot_${idx+1}`;
-    // IMPORTANT: keep colour on bottom pills too by using item.cls
     const stack = makeStack(
       {cls:item.cls, text:String(idx+1), token:item.token},
       idx+1,
@@ -534,8 +547,9 @@ function transformForTarget(token){
   const targetIsQuestion = (givenMode==="AFF");
   if(token==="SUBJ") return targetIsQuestion ? "du" : "Ech";
   if(token==="VERB"){
-    const v = targetIsQuestion ? cap1(conjDu(current.verb)) : conjEchBeforeGar(current.verb);
-    return v;
+    return targetIsQuestion
+      ? cap1(conjDu(current.verb))
+      : conjEchBeforeGar(current.verb, current.gar);
   }
   if(token==="GAR")  return current.gar;
   if(token==="INFO") return current.info;
