@@ -6,7 +6,6 @@
   <title>P4 – Sazstruktur (Inversioun)</title>
 
   <style>
-    /* FONT */
     @font-face{
       font-family:'Schoulschrëft';
       src:url('https://raw.githubusercontent.com/albrechtclaire1007/schoulschreft/main/schoulschreft_bold%5B2%5D.TTF') format('truetype');
@@ -22,9 +21,8 @@
       --ink:#2d1844;
       --white:#fff;
 
-      /* Handout colours */
       --subj:#b7f0c8;   /* green */
-      --verb:#e6dcff;   /* purple-ish */
+      --verb:#e6dcff;   /* purple */
       --gar:#ffd9c4;    /* orange */
       --info:#dbefff;   /* blue */
 
@@ -41,12 +39,8 @@
       min-height:100vh;
     }
 
-    button{
-      font-family:'Schoulschrëft', system-ui, sans-serif;
-      cursor:pointer;
-    }
+    button{ font-family:'Schoulschrëft', system-ui, sans-serif; cursor:pointer; }
 
-    /* TOP BAR */
     .top-bar{
       max-width:1200px;
       margin:0 auto 10px;
@@ -117,21 +111,19 @@
       padding:14px;
     }
 
-    /* ONE-LINE ROWS */
     .row{
       display:flex;
       justify-content:space-between;
       align-items:flex-start;
       gap:14px;
-      flex-wrap:nowrap;          /* force one line */
-      overflow-x:auto;           /* safety on tiny screens */
+      flex-wrap:nowrap;
+      overflow-x:auto;
       padding-bottom:4px;
       -webkit-overflow-scrolling: touch;
     }
     .row::-webkit-scrollbar{ height:10px; }
     .row::-webkit-scrollbar-thumb{ background: rgba(108,74,163,.18); border-radius:999px; }
 
-    /* Handout-style pill stack */
     .stack{
       flex: 1 1 0;
       min-width: 160px;
@@ -170,21 +162,18 @@
     .gar { background: var(--gar); }
     .info{ background: var(--info); }
 
-    /* draggable top pills */
     .bankPill{ cursor:grab; }
     .bankPill:active{ transform: scale(.99); }
     .bankPill.used{ opacity:.25; filter:grayscale(.2); cursor:default; }
     .selected{ outline: 5px solid rgba(108,74,163,.22); outline-offset: 3px; }
 
-    /* target drop slots */
     .drop{
       border: 2px dashed var(--dash);
       background: rgba(255,255,255,.75);
     }
     .drop.over{ outline:4px solid rgba(108,74,163,.18); outline-offset:2px; }
-    .drop.filled{ border-style:solid; background: var(--white); }
+    .drop.filled{ border-style:solid; } /* keep colours visible */
 
-    /* punctuation aligned with pills (not numbers) */
     .punctCol{
       width:38px;
       flex: 0 0 38px;
@@ -193,18 +182,16 @@
       align-items:center;
       gap:10px;
     }
-    .punctSpacer{
-      height: 4px;
-    }
+    .punctSpacer{ height:4px; }
     .punct{
       font-size:2.35rem;
       color: var(--purple-dark);
       line-height:1;
-      margin-top: 8px; /* aligns with pills */
+      margin-top: 8px;
     }
     .punctGhost{
       width:38px;
-      height:44px; /* to balance with number circles area */
+      height:44px;
       opacity:0;
     }
 
@@ -297,16 +284,15 @@ function magic(el){
   void el.offsetWidth;
   el.classList.add("magic");
 }
+function cap1(s){
+  if(!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
-/* ===================== ORTHO: -N RULE (Eifeler/Ortho tweak) =====================
-Rule you want here:
-Because in our AFF sentences the ech-verb is immediately followed by "gär"/"net gär"
-=> remove final -n from ech-form if it ends with "en".
-Example: lauschteren -> lauschtere gär
-*/
+/* ===================== ORTHO: -N RULE ===================== */
 function applyNRuleBeforeGar(echVerbForm){
   if(typeof echVerbForm !== "string") return echVerbForm;
-  return echVerbForm.endsWith("en") ? echVerbForm.slice(0, -1) : echVerbForm; // remove only the final "n"
+  return echVerbForm.endsWith("en") ? echVerbForm.slice(0, -1) : echVerbForm;
 }
 
 /* ===================== CONJUGATION (ECH/DU) ===================== */
@@ -333,13 +319,11 @@ function conjDu(inf){
   if(IRREG[inf]) return IRREG[inf].du;
   return stemOf(inf) + "s";
 }
-
-/* ech verb used in THIS GAME (always before gär/net gär) */
 function conjEchBeforeGar(inf){
   return applyNRuleBeforeGar(conjEchBase(inf));
 }
 
-/* ===================== EXAMPLES ===================== */
+/* ===================== 25 EXAMPLES ===================== */
 const EX = [
   { verb:"schwammen", gar:"gär",     info:null },
   { verb:"spillen",   gar:"gär",     info:"Fussball" },
@@ -355,31 +339,36 @@ const EX = [
   { verb:"spadséieren",gar:"gär",    info:null },
   { verb:"molen",     gar:"net gär", info:null },
   { verb:"léieren",   gar:"gär",     info:null },
-  { verb:"boxen",     gar:"net gär", info:null }
+  { verb:"boxen",     gar:"net gär", info:null },
+  { verb:"fueren",    gar:"gär",     info:"Vëlo" },
+  { verb:"maachen",   gar:"gär",     info:"Hausaufgaben" },
+  { verb:"kucken",    gar:"gär",     info:"Filmer" },
+  { verb:"lauschteren",gar:"net gär",info:"Radio" },
+  { verb:"spillen",   gar:"net gär", info:"Tennis" },
+  { verb:"danzen",    gar:"gär",     info:"Hip-Hop" },
+  { verb:"lafen",     gar:"net gär", info:"laang Strecken" },
+  { verb:"liesen",    gar:"net gär", info:"Zeitungen" },
+  { verb:"telefonéieren",gar:"net gär", info:"laang" },
+  { verb:"spadséieren",gar:"net gär", info:"an der Reen" }
 ];
 
 let order = shuffle(EX);
 let pos = 0;
 let current = null;
-
-// givenMode: "AFF" (Ech ... .) OR "Q" (Verb du ... ?)
-let givenMode = "AFF";
+let givenMode = "AFF";   // "AFF" or "Q"
 let needInfo = false;
 
-// click-to-place support
 let selectedTile = null;
+let placed = {1:null,2:null,3:null,4:null}; // {token, raw}
 
-// placed map by slot index in bottom (1..4)
-let placed = {1:null,2:null,3:null,4:null}; // {token, rawText}
-
-/* ===================== GRAMMAR STRUCTURES ===================== */
+/* ===================== STRUCTURES ===================== */
 function topStructure(){
   // AFF: 1 Ech, 2 verb(ech before gär), 3 (net) gär, 4 info?
-  // Q  : 1 verb(du), 2 du, 3 (net) gär, 4 info?
+  // Q  : 1 verb(du, capitalised), 2 du, 3 (net) gär, 4 info?
   const base = [
     givenMode==="AFF"
       ? {token:"SUBJ", cls:"subj", text:"Ech"}
-      : {token:"VERB", cls:"verb", text:conjDu(current.verb)},
+      : {token:"VERB", cls:"verb", text:cap1(conjDu(current.verb))},
     givenMode==="AFF"
       ? {token:"VERB", cls:"verb", text:conjEchBeforeGar(current.verb)}
       : {token:"SUBJ", cls:"subj", text:"du"},
@@ -390,13 +379,10 @@ function topStructure(){
 }
 
 function targetStructure(){
-  // OTHER form:
-  // if top AFF -> bottom Q: 1 verb(du), 2 du, 3 (net) gär, 4 info?
-  // if top Q   -> bottom AFF: 1 Ech, 2 verb(ech before gär), 3 (net) gär, 4 info?
   const targetIsQuestion = (givenMode==="AFF");
   const base = [
     targetIsQuestion
-      ? {token:"VERB", cls:"verb", text:conjDu(current.verb)}
+      ? {token:"VERB", cls:"verb", text:cap1(conjDu(current.verb))}
       : {token:"SUBJ", cls:"subj", text:"Ech"},
     targetIsQuestion
       ? {token:"SUBJ", cls:"subj", text:"du"}
@@ -425,7 +411,6 @@ function makeStack({cls,text,token}, number, {draggable=false, id=null, isDrop=f
 
   if(draggable){
     pill.draggable = true;
-
     pill.addEventListener("dragstart", (e)=>{
       if(pill.classList.contains("used")) return e.preventDefault();
       e.dataTransfer.setData("text/plain", JSON.stringify({token, raw:text, srcId: pill.id}));
@@ -433,9 +418,7 @@ function makeStack({cls,text,token}, number, {draggable=false, id=null, isDrop=f
 
     pill.addEventListener("click", ()=>{
       if(pill.classList.contains("used")) return;
-      if(selectedTile && selectedTile !== pill){
-        selectedTile.classList.remove("selected");
-      }
+      if(selectedTile && selectedTile !== pill) selectedTile.classList.remove("selected");
       selectedTile = pill;
       pill.classList.toggle("selected");
       if(!pill.classList.contains("selected")) selectedTile = null;
@@ -454,8 +437,10 @@ function makeStack({cls,text,token}, number, {draggable=false, id=null, isDrop=f
 function makePunctColumn(punctChar){
   const col = document.createElement("div");
   col.className = "punctCol";
+
   const spacer = document.createElement("div");
   spacer.className = "punctSpacer";
+
   const p = document.createElement("div");
   p.className = "punct";
   p.textContent = punctChar;
@@ -475,15 +460,12 @@ function renderTop(){
   topRow.innerHTML = "";
 
   const struct = topStructure();
-
   struct.forEach((item, idx)=>{
     const id = `bank_${idx+1}`;
     const stack = makeStack(item, idx+1, {draggable:true, id});
-    // hide 4th when no info
     if(idx===3 && !needInfo) stack.style.display="none";
     topRow.appendChild(stack);
   });
-
   topRow.appendChild(makePunctColumn(topPunct()));
 }
 
@@ -495,6 +477,7 @@ function renderBottom(){
 
   struct.forEach((item, idx)=>{
     const slotId = `slot_${idx+1}`;
+    // IMPORTANT: keep colour on bottom pills too by using item.cls
     const stack = makeStack(
       {cls:item.cls, text:String(idx+1), token:item.token},
       idx+1,
@@ -522,7 +505,6 @@ function renderBottom(){
       }
     });
 
-    // hide 4th when no info
     if(idx===3 && !needInfo) stack.style.display="none";
     bottomRow.appendChild(stack);
   });
@@ -534,7 +516,6 @@ function resetAll(){
   placed = {1:null,2:null,3:null,4:null};
   clearFb();
 
-  // reset bottom slots
   for(let i=1;i<=4;i++){
     const el = document.getElementById(`slot_${i}`);
     if(!el) continue;
@@ -542,7 +523,6 @@ function resetAll(){
     el.textContent = String(i);
   }
 
-  // reset top pills
   document.querySelectorAll(".bankPill").forEach(p=>{
     p.classList.remove("used","selected");
     p.draggable = true;
@@ -553,7 +533,10 @@ function resetAll(){
 function transformForTarget(token){
   const targetIsQuestion = (givenMode==="AFF");
   if(token==="SUBJ") return targetIsQuestion ? "du" : "Ech";
-  if(token==="VERB") return targetIsQuestion ? conjDu(current.verb) : conjEchBeforeGar(current.verb);
+  if(token==="VERB"){
+    const v = targetIsQuestion ? cap1(conjDu(current.verb)) : conjEchBeforeGar(current.verb);
+    return v;
+  }
   if(token==="GAR")  return current.gar;
   if(token==="INFO") return current.info;
   return "";
@@ -565,7 +548,6 @@ function placeIntoSlot(slotEl, token, raw, srcId){
   const src = document.getElementById(srcId);
   if(!src || src.classList.contains("used")) return;
 
-  // allow wrong placement
   slotEl.classList.add("filled");
   slotEl.textContent = raw;
   magic(slotEl);
@@ -616,7 +598,6 @@ function loadRound(){
   current = order[pos];
   needInfo = !!current.info;
   givenMode = (Math.random() < 0.5) ? "AFF" : "Q";
-
   document.getElementById("prog").textContent = `${pos+1} / ${order.length}`;
 
   renderTop();
