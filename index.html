@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="lb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>P4 – Sazstruktur (Inversioun)</title>
+
+  <style>
+    /* FONT */
+    @font-face{
+      font-family:'Schoulschrëft';
+      src:url('https://raw.githubusercontent.com/albrechtclaire1007/schoulschreft/main/schoulschreft_bold%5B2%5D.TTF') format('truetype');
+      font-weight:bold;
+      font-style:normal;
+      font-display:swap;
+    }
+
+    :root{
+      --purple-mid:#b7a2e5;
+      --purple-light:#ebe3ff;
+      --purple-dark:#6c4aa3;
+      --ink:#2d1844;
+      --white:#fff;
+
+      /* Sentence colours */
+      --subj:#b7f0c8;   /* green */
+      --verb:#e6dcff;   /* purple-ish */
+      --gar:#ffd9c4;    /* orange */
+      --info:#dbefff;   /* blue */
+    }
+
+    *{ margin:0; padding:0; box-sizing:border-box; }
+
+    body{
+      font-family:'Schoulschrëft', system-ui, sans-serif;
+      background:var(--purple-light);
+      padding:16px;
+      color:var(--ink);
+      min-height:100vh;
+    }
+
+    button{
+      font-family:'Schoulschrëft', system-ui, sans-serif;
+      cursor:pointer;
+    }
+
+    /* TOP BAR (same vibe) */
+    .top-bar{
+      max-width:1100px;
+      margin:0 auto 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      background:var(--purple-dark);
+      border-radius:999px;
+      padding:6px 12px;
+      color:var(--white);
+      gap:10px;
+      box-shadow: 0 10px 18px rgba(45,24,68,.12);
+    }
+    .top-bar-title{
+      font-size:1.45rem;
+      flex:1;
+      text-align:center;
+      min-height:1.4em;
+      opacity:.98;
+      padding:0 6px;
+      line-height:1.15;
+    }
+
+    .subtitle{
+      max-width:1100px;
+      margin:0 auto 14px;
+      text-align:center;
+      font-size:1.2rem;
+      opacity:0.85;
+    }
+
+    .instruction-box{
+      max-width:1100px;
+      margin:0 auto 14px;
+      background:var(--white);
+      border-radius:18px;
+      padding:12px 16px;
+      text-align:center;
+      font-size:1.35rem;
+      border:2px solid rgba(108,74,163,.15);
+    }
+
+    .row-center{
+      max-width:1100px;
+      margin: 0 auto 14px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .primary{
+      padding:10px 18px;
+      border-radius:999px;
+      border:2px solid var(--purple-dark);
+      background:var(--purple-mid);
+      color:var(--white);
+      font-size:1.25rem;
+    }
+    .secondary{
+      padding:8px 14px;
+      border-radius:999px;
+      border:2px solid rgba(108,74,163,.25);
+      background:white;
+      color:var(--ink);
+      font-size:1.15rem;
+    }
+    .pill{
+      background:var(--white);
+      border-radius:999px;
+      padding:8px 14px;
+      border:2px solid rgba(108,74,163,.15);
+      font-size:1.2rem;
+    }
+
+    .feedback{
+      margin-top:10px;
+      min-height:1.4em;
+      font-size:1.35rem;
+      text-align:center;
+    }
+    .feedback.ok{ color:#117a3a; }
+    .feedback.bad{ color:#b02323; }
+
+    /* Sentence area */
+    .sent-area{
+      width:min(980px, 100%);
+      margin: 0 auto;
+    }
+
+    .sent-caption{
+      text-align:center;
+      font-size:1.25rem;
+      opacity:.85;
+      margin: 4px 0 8px;
+    }
+
+    .sent-row{
+      display:flex;
+      justify-content:center;
+      align-items:flex-end;
+      gap:12px;
+      flex-wrap:wrap;
+      margin: 0 auto 10px;
+    }
+
+    .slotStack{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+      width:min(220px, 45vw);
+      min-width: 140px;
+    }
+
+    .sent-slot{
+      width:100%;
+      min-height:76px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      border-radius:18px;
+      border:2px dashed rgba(108,74,163,.45);
+      background: var(--white);
+      padding:10px;
+      font-size:1.55rem;
+      user-select:none;
+      word-break:break-word;
+    }
+    .sent-slot.locked{
+      border-style:solid;
+      border-color: rgba(108,74,163,.18);
+      opacity:.95;
+    }
+    .sent-slot.filled{ border-style:solid; }
+    .sent-slot.over{
+      outline:4px solid rgba(108,74,163,.18);
+      outline-offset:2px;
+    }
+
+    .posnum{ font-size:1.15rem; opacity:.7; }
+
+    .punct{
+      font-size:2.2rem;
+      color: var(--purple-dark);
+      padding: 0 2px 10px;
+      line-height:1;
+    }
+
+    .bank{
+      width:min(980px, 100%);
+      margin: 12px auto 14px;
+      display:flex;
+      justify-content:center;
+      flex-wrap:wrap;
+      gap:12px;
+    }
+
+    .word{
+      padding:12px 18px;
+      border-radius:18px;
+      font-size:1.55rem;
+      border:2px solid rgba(0,0,0,.08);
+      user-select:none;
+      cursor:grab;
+      background: var(--white);
+      word-break:break-word;
+      max-width: 92vw;
+    }
+    .word:active{ transform:scale(.98); }
+
+    .subj{ background: var(--subj); }
+    .verb{ background: var(--verb); }
+    .gar { background: var(--gar); }
+    .info{ background: var(--info); }
+
+    .flash-green{ animation: flashGreen .25s ease; }
+    .flash-red{ animation: flashRed .25s ease; }
+    @keyframes flashGreen{
+      0%{ box-shadow:none; }
+      50%{ box-shadow: 0 0 0 6px rgba(183,240,200,.95); }
+      100%{ box-shadow:none; }
+    }
+    @keyframes flashRed{
+      0%{ box-shadow:none; }
+      50%{ box-shadow: 0 0 0 6px rgba(255,204,204,.95); }
+      100%{ box-shadow:none; }
+    }
+
+    .magic{ animation: magicPop .45s ease; }
+    @keyframes magicPop{
+      0%   { transform:scale(1); filter:brightness(1); }
+      35%  { transform:scale(1.10); filter:brightness(1.18); }
+      100% { transform:scale(1); filter:brightness(1); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top-bar">
+    <div class="top-bar-title">P4 – Sazstruktur – Inversioun</div>
+  </div>
+
+  <div class="subtitle">Ausso ↔ Fro (Ech ↔ Du)</div>
+
+  <div class="instruction-box">
+    Uewen gesäis du e Saz (Ausso oder Fro). Drënner zéiss du d’Wierder an d’Këschten (1–4) fir déi aner Form ze bauen.
+    D’Punktuatioun steet nieft de Këschten. De Verb an de Sujet “zaubere” an déi richteg Form.
+  </div>
+
+  <div class="row-center">
+    <button class="secondary" id="resetBtn">Reset</button>
+    <button class="primary" id="nextBtn">Nächst Beispill</button>
+    <div class="pill" id="prog">1 / …</div>
+  </div>
+
+  <div class="sent-area">
+    <div class="sent-caption" id="givenCaption">Ginn Saz</div>
+
+    <div class="sent-row" id="givenRow">
+      <div class="slotStack"><div class="sent-slot locked" id="given1"></div><div class="posnum">1</div></div>
+      <div class="slotStack"><div class="sent-slot locked" id="given2"></div><div class="posnum">2</div></div>
+      <div class="slotStack"><div class="sent-slot locked" id="given3"></div><div class="posnum">3</div></div>
+      <div class="slotStack" id="givenStack4"><div class="sent-slot locked" id="given4"></div><div class="posnum">4</div></div>
+      <div class="punct" id="givenPunct">.</div>
+    </div>
+
+    <div class="sent-caption" id="targetCaption">Du méchs déi aner Form</div>
+
+    <div class="sent-row" id="targetRow">
+      <div class="slotStack"><div class="sent-slot" id="t1" data-slot="1"></div><div class="posnum">1</div></div>
+      <div class="slotStack"><div class="sent-slot" id="t2" data-slot="2"></div><div class="posnum">2</div></div>
+      <div class="slotStack"><div class="sent-slot" id="t3" data-slot="3"></div><div class="posnum">3</div></div>
+      <div class="slotStack" id="targetStack4"><div class="sent-slot" id="t4" data-slot="4"></div><div class="posnum">4</div></div>
+      <div class="punct" id="targetPunct">?</div>
+    </div>
+
+    <div class="bank" id="bank"></div>
+    <div class="feedback" id="fb"></div>
+  </div>
+
+<script>
+/* ===================== SMALL HELPERS ===================== */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function flash(el, cls){
+  el.classList.remove("flash-green","flash-red","magic");
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+function setFb(text, ok){
+  const el = document.getElementById("fb");
+  el.textContent = text;
+  el.className = "feedback " + (ok ? "ok" : "bad");
+}
+function clearFb(){
+  const el = document.getElementById("fb");
+  el.textContent = "";
+  el.className = "feedback";
+}
+function animTransform(slotEl, newText){
+  slotEl.classList.remove("magic");
+  void slotEl.offsetWidth;
+  slotEl.classList.add("magic");
+  setTimeout(()=>{ slotEl.textContent = newText; }, 170);
+}
+
+/* ===================== VERB DATA (same as your set) ===================== */
+const IRREG = {
+  "fueren":   { ech:"fueren", du:"fiers" },
+  "danzen":   { ech:"danzen", du:"danz"  },
+  "liesen":   { ech:"liesen", du:"lies"  },
+  "schwammen":{ ech:"schwammen", du:"schwëmms" },
+  "molen":    { ech:"molen", du:"mools" },
+  "lafen":    { ech:"lafen", du:"leefs" },
+  "maachen":  { ech:"maachen", du:"méchs" },
+  "spillen":  { ech:"spillen", du:"spills" }
+};
+const REG = ["lauschteren","kucken","boxen","kachen","léieren","raschten","spadséieren","telefonéieren"];
+
+function stemOf(inf){
+  if(inf.endsWith("en")) return inf.slice(0,-2);
+  return inf;
+}
+function conjEch(inf){
+  if(IRREG[inf]) return IRREG[inf].ech;
+  return stemOf(inf) + "en";
+}
+function conjDu(inf){
+  if(IRREG[inf]) return IRREG[inf].du;
+  return stemOf(inf) + "s";
+}
+
+/* ===================== SENTENCE EXAMPLES ===================== */
+const EX = [
+  { verb:"spillen", gar:"gär", info:"Fussball" },
+  { verb:"kucken", gar:"net gär", info:"Tëlee" },
+  { verb:"lauschteren", gar:"gär", info:"Musek" },
+  { verb:"liesen", gar:"gär", info:null },
+  { verb:"schwammen", gar:"net gär", info:null },
+  { verb:"danzen", gar:"gär", info:null },
+  { verb:"lafen", gar:"gär", info:null },
+  { verb:"maachen", gar:"net gär", info:"Sport" },
+  { verb:"telefonéieren", gar:"gär", info:null },
+  { verb:"raschten", gar:"net gär", info:null },
+  { verb:"kachen", gar:"gär", info:null },
+  { verb:"spadséieren", gar:"gär", info:null },
+  { verb:"molen", gar:"net gär", info:null },
+  { verb:"léieren", gar:"gär", info:null },
+  { verb:"boxen", gar:"net gär", info:null }
+];
+
+let order = shuffle(EX);
+let pos = 0;
+let current = null;
+let givenMode = "AFF"; // "AFF" or "Q"
+let needInfo = false;
+
+let placed = {1:null,2:null,3:null,4:null};
+
+/* ===================== BUILD UI ===================== */
+function setGiven(){
+  const subj = (givenMode==="AFF") ? "Ech" : "Du";
+  const verb = (givenMode==="AFF") ? conjEch(current.verb) : conjDu(current.verb);
+
+  document.getElementById("given1").textContent = subj;
+  document.getElementById("given2").textContent = verb;
+  document.getElementById("given3").textContent = current.gar;
+
+  if(needInfo){
+    document.getElementById("given4").textContent = current.info;
+  }else{
+    document.getElementById("given4").textContent = "";
+  }
+
+  document.getElementById("givenPunct").textContent = (givenMode==="AFF") ? "." : "?";
+  document.getElementById("targetPunct").textContent = (givenMode==="AFF") ? "?" : ".";
+  document.getElementById("givenCaption").textContent  = (givenMode==="AFF") ? "Ginn Saz: Ausso" : "Ginn Saz: Fro";
+  document.getElementById("targetCaption").textContent = (givenMode==="AFF") ? "Du méchs: Fro" : "Du méchs: Ausso";
+}
+
+function buildBank(){
+  const bank = document.getElementById("bank");
+  bank.innerHTML = "";
+
+  const subjText = (givenMode==="AFF") ? "Ech" : "Du";
+  const verbText = (givenMode==="AFF") ? conjEch(current.verb) : conjDu(current.verb);
+
+  bank.appendChild(makeTile(subjText, "subj", "SUBJ"));
+  bank.appendChild(makeTile(verbText, "verb", "VERB"));
+  bank.appendChild(makeTile(current.gar, "gar", "GAR"));
+  if(needInfo){
+    bank.appendChild(makeTile(current.info, "info", "INFO"));
+  }
+}
+
+function makeTile(text, cls, token){
+  const d = document.createElement("div");
+  d.className = `word ${cls}`;
+  d.textContent = text;
+  d.draggable = true;
+  d.dataset.token = token;
+  d.dataset.value = text;
+  d.addEventListener("dragstart", (e)=>{
+    e.dataTransfer.setData("text/plain", JSON.stringify({token, value:text}));
+  });
+  return d;
+}
+
+function removeFromBank(token, value){
+  const bank = document.getElementById("bank");
+  const tiles = Array.from(bank.querySelectorAll(".word"));
+  const t = tiles.find(x => x.dataset.token===token && x.dataset.value===value);
+  if(t) t.remove();
+}
+
+function resetTarget(){
+  placed = {1:null,2:null,3:null,4:null};
+  clearFb();
+
+  const g4 = document.getElementById("givenStack4");
+  const t4 = document.getElementById("targetStack4");
+  g4.style.display = needInfo ? "flex" : "none";
+  t4.style.display = needInfo ? "flex" : "none";
+
+  ["t1","t2","t3","t4"].forEach((id, i)=>{
+    const el = document.getElementById(id);
+    el.classList.remove("filled","over","magic","flash-green","flash-red");
+    el.textContent = String(i+1);
+  });
+}
+
+function expected(){
+  const targetIsQuestion = (givenMode==="AFF");
+  return {
+    subj: targetIsQuestion ? "Du" : "Ech",
+    verb: targetIsQuestion ? conjDu(current.verb) : conjEch(current.verb),
+    gar: "gär",
+    info: needInfo ? current.info : null
+  };
+}
+
+function place(slotEl, slotNum, token, value){
+  if(slotEl.classList.contains("filled")) return;
+
+  const role = slotNum===1 ? "SUBJ" : slotNum===2 ? "VERB" : slotNum===3 ? "GAR" : "INFO";
+  if(token !== role){
+    flash(slotEl, "flash-red");
+    setFb("Probéier nach eng Kéier.", false);
+    return;
+  }
+
+  slotEl.classList.add("filled");
+  flash(slotEl, "flash-green");
+
+  const exp = expected();
+
+  if(token==="SUBJ"){
+    slotEl.textContent = value;
+    removeFromBank("SUBJ", value);
+    animTransform(slotEl, exp.subj);
+    placed[slotNum] = exp.subj;
+  }
+  if(token==="VERB"){
+    slotEl.textContent = value;
+    removeFromBank("VERB", value);
+    animTransform(slotEl, exp.verb);
+    placed[slotNum] = exp.verb;
+  }
+  if(token==="GAR"){
+    slotEl.textContent = value;
+    removeFromBank("GAR", value);
+    animTransform(slotEl, exp.gar);
+    placed[slotNum] = exp.gar;
+  }
+  if(token==="INFO"){
+    slotEl.textContent = value;
+    removeFromBank("INFO", value);
+    placed[slotNum] = value;
+  }
+
+  checkDone();
+}
+
+function checkDone(){
+  const exp = expected();
+  if(!placed[1] || !placed[2] || !placed[3]) return;
+  if(needInfo && !placed[4]) return;
+
+  const ok =
+    placed[1] === exp.subj &&
+    placed[2] === exp.verb &&
+    placed[3] === exp.gar &&
+    (!needInfo || placed[4] === exp.info);
+
+  if(!ok){
+    setFb("Nach net ganz. Kuck d’Nummeren 1–4.", false);
+    return;
+  }
+
+  setFb("Richteg!", true);
+
+  setTimeout(()=>nextRound(), 650);
+}
+
+function wireSlotsOnce(){
+  if(window.__wired) return;
+  ["t1","t2","t3","t4"].forEach((id, idx)=>{
+    const slot = document.getElementById(id);
+    slot.addEventListener("dragover", (e)=>{ e.preventDefault(); slot.classList.add("over"); });
+    slot.addEventListener("dragleave", ()=> slot.classList.remove("over"));
+    slot.addEventListener("drop", (e)=>{
+      e.preventDefault();
+      slot.classList.remove("over");
+      const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+      place(slot, idx+1, data.token, data.value);
+    });
+  });
+  window.__wired = true;
+}
+
+function loadRound(){
+  wireSlotsOnce();
+
+  current = order[pos];
+  needInfo = !!current.info;
+  givenMode = (Math.random() < 0.5) ? "AFF" : "Q";
+
+  document.getElementById("prog").textContent = `${pos+1} / ${order.length}`;
+
+  setGiven();
+  resetTarget();
+  buildBank();
+}
+
+function nextRound(){
+  pos++;
+  if(pos >= order.length){
+    order = shuffle(EX);
+    pos = 0;
+  }
+  loadRound();
+}
+
+/* ===================== BUTTONS + INIT ===================== */
+document.getElementById("resetBtn").addEventListener("click", loadRound);
+document.getElementById("nextBtn").addEventListener("click", nextRound);
+
+loadRound();
+</script>
+</body>
+</html>
