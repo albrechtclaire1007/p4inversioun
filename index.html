@@ -1,312 +1,701 @@
 <!DOCTYPE html>
 <html lang="lb">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>P4 – Ausso bauen</title>
 
 <style>
-@font-face{
-  font-family:'Schoulschrëft';
-  src:url('https://raw.githubusercontent.com/albrechtclaire1007/schoulschreft/main/schoulschreft_bold%5B2%5D.TTF') format('truetype');
-  font-weight:bold;
-}
+  /* FONT */
+  @font-face{
+    font-family:'Schoulschrëft';
+    src:url('https://raw.githubusercontent.com/albrechtclaire1007/schoulschreft/main/schoulschreft_bold%5B2%5D.TTF') format('truetype');
+    font-weight:bold;
+    font-style:normal;
+    font-display:swap;
+  }
 
-:root{
-  --bg:#ebe3ff;
-  --ink:#2d1844;
-  --subj:#b7f0c8;
-  --verb:#e6dcff;
-  --gar:#ffd9c4;
-  --box:#ffffff;
-  --ok:#2f8f4e;
-  --bad:#b02323;
-}
+  :root{
+    --purple-mid:#b7a2e5;
+    --purple-light:#ebe3ff;
+    --purple-dark:#6c4aa3;
+    --ink:#2d1844;
+    --white:#fff;
 
-*{box-sizing:border-box}
+    --subj:#b7f0c8;   /* green */
+    --verb:#e6dcff;   /* purple */
+    --gar:#ffd9c4;    /* orange */
+    --info:#dbefff;   /* blue */
 
-body{
-  margin:0;
-  padding:18px;
-  font-family:'Schoulschrëft', system-ui, sans-serif;
-  background:var(--bg);
-  color:var(--ink);
-}
+    --dash: rgba(108,74,163,.35);
+  }
 
-h1{
-  text-align:center;
-  font-size:1.6rem;
-  margin-bottom:10px;
-}
+  *{ margin:0; padding:0; box-sizing:border-box; }
 
-.instruction{
-  max-width:1000px;
-  margin:0 auto 16px;
-  background:var(--box);
-  border-radius:18px;
-  padding:14px;
-  text-align:center;
-  font-size:1.2rem;
-}
+  body{
+    font-family:'Schoulschrëft', system-ui, sans-serif;
+    background:var(--purple-light);
+    padding:16px;
+    color:var(--ink);
+    min-height:100vh;
+  }
 
-/* SENTENCE ROW */
-.row{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap:12px;
-  max-width:1100px;
-  margin:0 auto;
-}
+  button{
+    font-family:'Schoulschrëft', system-ui, sans-serif;
+    cursor:pointer;
+  }
 
-.slotWrap{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
+  .top-bar{
+    max-width:1200px;
+    margin:0 auto 10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--purple-dark);
+    border-radius:999px;
+    padding:10px 14px;
+    color:var(--white);
+    box-shadow: 0 10px 18px rgba(45,24,68,.12);
+    text-align:center;
+    font-size:1.45rem;
+    line-height:1.1;
+  }
 
-.slot{
-  width:100%;
-  min-height:72px;
-  background:#fff;
-  border-radius:18px;
-  border:2px dashed rgba(0,0,0,.25);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:1.5rem;
-}
+  .instruction-box{
+    max-width:1200px;
+    margin:0 auto 14px;
+    background:var(--white);
+    border-radius:18px;
+    padding:12px 16px;
+    text-align:center;
+    font-size:1.35rem;
+    border:2px solid rgba(108,74,163,.15);
+  }
 
-.slot.filled{
-  border-style:solid;
-}
+  .row-center{
+    max-width:1200px;
+    margin: 0 auto 14px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
 
-.pos{
-  margin-top:4px;
-  font-size:1rem;
-  opacity:.6;
-}
+  .primary{
+    padding:10px 18px;
+    border-radius:999px;
+    border:2px solid var(--purple-dark);
+    background:var(--purple-mid);
+    color:var(--white);
+    font-size:1.25rem;
+  }
+  .secondary{
+    padding:8px 14px;
+    border-radius:999px;
+    border:2px solid rgba(108,74,163,.25);
+    background:white;
+    color:var(--ink);
+    font-size:1.15rem;
+  }
+  .pill{
+    background:var(--white);
+    border-radius:999px;
+    padding:8px 14px;
+    border:2px solid rgba(108,74,163,.15);
+    font-size:1.2rem;
+  }
 
-.dot{
-  font-size:2.2rem;
-  padding-bottom:8px;
-}
+  .board{
+    width:min(1200px, 100%);
+    margin:0 auto;
+    background: rgba(255,255,255,.35);
+    border:2px solid rgba(108,74,163,.10);
+    border-radius:22px;
+    padding:14px;
+  }
 
-/* BANK */
-.bank{
-  display:flex;
-  justify-content:center;
-  gap:14px;
-  flex-wrap:wrap;
-  margin:18px auto;
-  max-width:1100px;
-}
+  /* Sentence slots in ONE ROW */
+  .row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    padding-bottom:4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .row::-webkit-scrollbar{ height:10px; }
+  .row::-webkit-scrollbar-thumb{ background: rgba(108,74,163,.18); border-radius:999px; }
 
-.pill{
-  padding:12px 22px;
-  border-radius:999px;
-  font-size:1.4rem;
-  border:2px solid rgba(0,0,0,.08);
-  cursor:grab;
-  user-select:none;
-}
+  .stack{
+    flex: 1 1 0;
+    min-width: 160px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
 
-.subj{background:var(--subj)}
-.verb{background:var(--verb)}
-.gar{background:var(--gar)}
+  .wordPill{
+    width:100%;
+    border-radius:999px;
+    padding:14px 14px;
+    font-size:1.95rem;
+    text-align:center;
+    border:2px solid rgba(0,0,0,.06);
+    user-select:none;
+    word-break:break-word;
+  }
 
-.controls{
-  display:flex;
-  justify-content:center;
-  gap:12px;
-  margin-top:10px;
-}
+  .numCircle{
+    width:44px;
+    height:44px;
+    border-radius:999px;
+    border:3px solid #000;
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.4rem;
+    line-height:1;
+  }
 
-button{
-  font-family:'Schoulschrëft';
-  font-size:1.2rem;
-  padding:10px 18px;
-  border-radius:999px;
-  border:2px solid var(--ink);
-  background:#fff;
-  cursor:pointer;
-}
+  .subj{ background: var(--subj); }
+  .verb{ background: var(--verb); }
+  .gar { background: var(--gar); }
+  .info{ background: var(--info); }
 
-.feedback{
-  text-align:center;
-  min-height:1.5em;
-  margin-top:10px;
-  font-size:1.3rem;
-}
-.feedback.ok{color:var(--ok)}
-.feedback.bad{color:var(--bad)}
+  /* Bank pills */
+  .bankPill{ cursor:grab; }
+  .bankPill:active{ transform: scale(.99); }
+  .bankPill.used{ opacity:.25; filter:grayscale(.2); cursor:default; }
+
+  /* Verb pill: cycle hint */
+  .cycleHint{
+    font-size:1rem;
+    opacity:.6;
+    margin-top:-4px;
+    text-align:center;
+  }
+
+  /* Drop slots */
+  .drop{
+    border: 2px dashed var(--dash);
+    background: rgba(255,255,255,.75);
+  }
+  .drop.over{ outline:4px solid rgba(108,74,163,.18); outline-offset:2px; }
+  .drop.filled{ border-style:solid; }
+
+  /* punctuation aligned with pills */
+  .punctCol{
+    width:38px;
+    flex: 0 0 38px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
+  .punctSpacer{ height:4px; }
+  .punct{
+    font-size:2.35rem;
+    color: var(--purple-dark);
+    line-height:1;
+    margin-top: 8px;
+  }
+  .punctGhost{
+    width:38px;
+    height:44px;
+    opacity:0;
+  }
+
+  .feedback{
+    margin: 10px auto 2px;
+    min-height:1.4em;
+    font-size:1.35rem;
+    text-align:center;
+  }
+  .feedback.ok{ color:#117a3a; }
+  .feedback.bad{ color:#b02323; }
+
+  .flash-green{ animation: flashGreen .25s ease; }
+  .flash-red{ animation: flashRed .25s ease; }
+  @keyframes flashGreen{
+    0%{ box-shadow:none; }
+    50%{ box-shadow: 0 0 0 6px rgba(183,240,200,.95); }
+    100%{ box-shadow:none; }
+  }
+  @keyframes flashRed{
+    0%{ box-shadow:none; }
+    50%{ box-shadow: 0 0 0 6px rgba(255,204,204,.95); }
+    100%{ box-shadow:none; }
+  }
+
+  @media (max-width:520px){
+    .wordPill{ font-size:1.65rem; padding:12px 12px; }
+    .numCircle{ width:40px; height:40px; font-size:1.25rem; }
+    .punct{ font-size:2.1rem; margin-top: 6px; }
+    .stack{ min-width: 140px; }
+  }
 </style>
 </head>
 
 <body>
+  <div class="top-bar">P4 – Ausso bauen</div>
 
-<h1>Ausso bauen</h1>
-
-<div class="instruction">
-Lies d’Wierder a bau eng <strong>Ausso</strong>.  
-Zéi d'Sazdeeler an déi richteg Reiefolleg.
-</div>
-
-<div class="row">
-  <div class="slotWrap">
-    <div class="slot" data-slot="1"></div>
-    <div class="pos">1</div>
+  <div class="instruction-box">
+    Lies d’Wierder a bau eng <strong>Ausso</strong>. Zéi d'Sazdeeler an déi richteg Reiefolleg. (du kanns och falsch probéieren)
   </div>
-  <div class="slotWrap">
-    <div class="slot" data-slot="2"></div>
-    <div class="pos">2</div>
+
+  <div class="row-center">
+    <button class="secondary" id="resetBtn">Reset</button>
+    <button class="secondary" id="checkBtn">Kontrolléieren</button>
+    <button class="primary" id="nextBtn">Nächst Beispill</button>
+    <div class="pill" id="prog">1 / …</div>
   </div>
-  <div class="slotWrap">
-    <div class="slot" data-slot="3"></div>
-    <div class="pos">3</div>
+
+  <div class="board">
+    <div class="row" id="slotsRow"></div>
+    <div style="height:14px;"></div>
+    <div class="row" id="bankRow"></div>
+    <div class="feedback" id="fb"></div>
   </div>
-  <div class="dot">.</div>
-</div>
-
-<div class="bank" id="bank"></div>
-
-<div class="controls">
-  <button id="check">Kontrolléieren</button>
-  <button id="next">Nächst</button>
-</div>
-
-<div class="feedback" id="fb"></div>
 
 <script>
-/* ================= DATA ================= */
-
-const VERBS = [
-  "lauschteren","kucken","liesen","schwammen","lafen","danzen",
-  "maachen","spillen","telefonéieren","raschten","kachen","boxen",
-  "léieren","spadséieren","molen"
-];
-
-const EXAMPLES = [];
-while(EXAMPLES.length < 30){
-  EXAMPLES.push({
-    pron:"ech",
-    verb:VERBS[Math.floor(Math.random()*VERBS.length)],
-    gar:Math.random()<.5 ? "gär" : "net gär"
-  });
+/* ===================== HELPERS ===================== */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function flash(el, cls){
+  el.classList.remove("flash-green","flash-red");
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+function setFb(text, ok){
+  const el = document.getElementById("fb");
+  el.textContent = text;
+  el.className = "feedback " + (ok ? "ok" : "bad");
+}
+function clearFb(){
+  const el = document.getElementById("fb");
+  el.textContent = "";
+  el.className = "feedback";
 }
 
-/* ================= CONJUGATION ================= */
+/* ===================== CONJUGATION (REMINDER TABLE) ===================== */
+/* Based on your pages (and the earlier set) */
+const IRREG = {
+  fueren:    { ech:"fueren", du:"fiers",  hien:"fiert",  dir:"fuert"  },
+  danzen:    { ech:"danzen", du:"danz",   hien:"danzt",  dir:"danzt"  },
+  liesen:    { ech:"liesen", du:"lies",   hien:"liest",  dir:"liest"  },
+  schwammen: { ech:"schwammen", du:"schwëmms", hien:"schwëmmt", dir:"schwammt" },
+  molen:     { ech:"molen", du:"mools",   hien:"moolt",  dir:"moolt"  },
+  lafen:     { ech:"lafen", du:"leefs",   hien:"leeft",  dir:"laaft"  },
+  maachen:   { ech:"maachen", du:"méchs", hien:"mécht",  dir:"maacht" },
+  spillen:   { ech:"spillen", du:"spills",hien:"spillt", dir:"spillt" }
+};
+
+const REGULAR = ["lauschteren","kucken","boxen","kachen","léieren","raschten","spadséieren","telefonéieren"];
 
 function stemOf(inf){
   return inf.endsWith("en") ? inf.slice(0,-2) : inf;
 }
 
-function conjEchBase(inf){
-  return stemOf(inf)+"en";
-}
-
-/* -n rule incl. net gär */
-function applyNRule(form, nextWord){
-  if(form.endsWith("en") && !nextWord.startsWith("n")){
-    return form.slice(0,-1);
+function conjBase(inf){
+  if(IRREG[inf]){
+    const v = IRREG[inf];
+    return {
+      ech: v.ech,
+      du: v.du,
+      hien: v.hien,
+      mir: v.ech,
+      dir: v.dir,
+      si: v.ech
+    };
   }
-  return form;
+  const st = stemOf(inf);
+  return { ech: st+"en", du: st+"s", hien: st+"t", mir: st+"en", dir: st+"t", si: st+"en" };
 }
 
-function conjEch(inf, gar){
-  return applyNRule(conjEchBase(inf), gar);
+/* ===================== -N RULE (context sensitive) =====================
+If ech-form ends with "en":
+- drop final -n ONLY if next word does NOT start with "n"
+So:
+  Ech lauschteren gär     -> Ech lauschtere gär
+  Ech lauschteren net gär -> Ech lauschteren net gär
+*/
+function applyNRuleBeforeNextWord(echVerbForm, nextWord){
+  const next = (nextWord || "").trim().toLowerCase();
+  const nextStartsWithN = next.startsWith("n"); // "net ..."
+  if(echVerbForm.endsWith("en") && !nextStartsWithN){
+    return echVerbForm.slice(0, -1); // remove only final "n"
+  }
+  return echVerbForm;
 }
 
-/* ================= GAME STATE ================= */
+/* In this game, ech verb is always followed by current.gar */
+function echFormWithRule(inf, gar){
+  const base = conjBase(inf).ech;
+  return applyNRuleBeforeNextWord(base, gar);
+}
 
+/* ===================== EXAMPLES (30, incl. info) ===================== */
+const INFO_MAP = {
+  maachen: ["Sport","Musek"],
+  lauschteren: ["Musek"],
+  kucken: ["Tëlee"],
+  spillen: ["Fussball","Basket"],
+  fueren: ["Skateboard","Vëlo"]
+};
+
+const VERB_POOL = [
+  "fueren","danzen","liesen","schwammen","molen","lafen","maachen","spillen",
+  "lauschteren","kucken","boxen","kachen","léieren","raschten","spadséieren","telefonéieren"
+];
+
+function makeExamples(n=30){
+  const out = [];
+  while(out.length < n){
+    const verb = VERB_POOL[Math.floor(Math.random()*VERB_POOL.length)];
+    const gar = Math.random() < 0.5 ? "gär" : "net gär";
+
+    let info = null;
+    if(INFO_MAP[verb] && Math.random() < 0.75){
+      const arr = INFO_MAP[verb];
+      info = arr[Math.floor(Math.random()*arr.length)];
+    }else if(Math.random() < 0.35){
+      // occasional extra info from a small pool to reach variety
+      const extras = ["am Park","doheem","mat Frënn"];
+      info = extras[Math.floor(Math.random()*extras.length)];
+    }
+
+    out.push({ pron:"ech", verb, gar, info });
+  }
+  return out;
+}
+
+const EX = makeExamples(30);
+let order = shuffle(EX);
 let pos = 0;
 let current = null;
-let placed = {1:null,2:null,3:null};
 
-const slots = document.querySelectorAll(".slot");
+/* placement record: by slot index => {type, text} */
+let placed = {};
 
-/* ================= DRAG ================= */
+/* ===================== UI BUILD ===================== */
+function makeStack({cls,text,type,id,isBank=false,isDrop=false}, number){
+  const stack = document.createElement("div");
+  stack.className = "stack";
 
-slots.forEach(s=>{
-  s.addEventListener("dragover", e=>e.preventDefault());
-  s.addEventListener("drop", e=>{
-    const data = JSON.parse(e.dataTransfer.getData("text"));
-    s.textContent = data.text;
-    s.classList.add("filled");
-    placed[s.dataset.slot] = data.type;
-    document.querySelector(`[data-id="${data.id}"]`)?.remove();
-  });
-});
+  const pill = document.createElement("div");
+  pill.className = `wordPill ${cls} ${isBank ? "bankPill" : ""} ${isDrop ? "drop" : ""}`;
+  pill.textContent = text;
+  pill.dataset.type = type;
+  pill.dataset.id = id;
 
-function makePill(text, cls, type, id){
-  const p = document.createElement("div");
-  p.className = `pill ${cls}`;
-  p.textContent = text;
-  p.dataset.id = id;
-  p.draggable = true;
-  p.addEventListener("dragstart", e=>{
-    e.dataTransfer.setData("text", JSON.stringify({text,type,id}));
-  });
-  return p;
+  if(isBank){
+    pill.draggable = true;
+    pill.addEventListener("dragstart", (e)=>{
+      if(pill.classList.contains("used")) return e.preventDefault();
+      e.dataTransfer.setData("text/plain", JSON.stringify({
+        id,
+        type,
+        cls,
+        text: pill.textContent,
+        formKey: pill.dataset.formKey || ""
+      }));
+    });
+  }
+
+  const num = document.createElement("div");
+  num.className = "numCircle";
+  num.textContent = String(number);
+
+  stack.appendChild(pill);
+  stack.appendChild(num);
+
+  // small hint under verb bank pill
+  if(isBank && type==="VERB"){
+    const hint = document.createElement("div");
+    hint.className = "cycleHint";
+    hint.textContent = "klick fir d’Form ze wiesselen";
+    stack.appendChild(hint);
+  }
+
+  return stack;
 }
 
-/* ================= RENDER ================= */
+function makePunctColumn(punctChar){
+  const col = document.createElement("div");
+  col.className = "punctCol";
+  const spacer = document.createElement("div");
+  spacer.className = "punctSpacer";
+  const p = document.createElement("div");
+  p.className = "punct";
+  p.textContent = punctChar;
+  const ghost = document.createElement("div");
+  ghost.className = "punctGhost";
+  ghost.textContent = "0";
+  col.appendChild(spacer);
+  col.appendChild(p);
+  col.appendChild(ghost);
+  return col;
+}
 
-function loadRound(){
-  current = EXAMPLES[pos];
-  placed = {1:null,2:null,3:null};
-  document.getElementById("fb").textContent = "";
+function renderSlots(){
+  const wrap = document.getElementById("slotsRow");
+  wrap.innerHTML = "";
 
-  slots.forEach(s=>{
-    s.textContent="";
-    s.classList.remove("filled");
-  });
+  const needInfo = !!current.info;
+  const slotCount = needInfo ? 4 : 3;
 
-  const bank = document.getElementById("bank");
-  bank.innerHTML="";
+  placed = {};
+  for(let i=1;i<=slotCount;i++){
+    const expectedType = (i===1) ? "SUBJ" : (i===2) ? "VERB" : (i===3) ? "GAR" : "INFO";
+    const cls = expectedType==="SUBJ" ? "subj" : expectedType==="VERB" ? "verb" : expectedType==="GAR" ? "gar" : "info";
+    const stack = makeStack({cls, text:String(i), type:expectedType, id:`slot_${i}`, isDrop:true}, i);
+    const pill = stack.querySelector(".wordPill");
 
-  const verbForms = [
-    conjEch(current.verb, current.gar),
-    stemOf(current.verb)+"s",
-    stemOf(current.verb)+"t"
+    pill.dataset.slot = String(i);
+    pill.dataset.expected = expectedType;
+
+    pill.addEventListener("dragover", (e)=>{ e.preventDefault(); pill.classList.add("over"); });
+    pill.addEventListener("dragleave", ()=> pill.classList.remove("over"));
+    pill.addEventListener("drop", (e)=>{
+      e.preventDefault();
+      pill.classList.remove("over");
+      let data=null;
+      try{ data = JSON.parse(e.dataTransfer.getData("text/plain")); }catch(_){}
+      if(!data) return;
+      placeIntoSlot(pill, data);
+    });
+
+    wrap.appendChild(stack);
+  }
+
+  wrap.appendChild(makePunctColumn(".")); // always affirmative in this game
+}
+
+function renderBank(){
+  const wrap = document.getElementById("bankRow");
+  wrap.innerHTML = "";
+
+  const needInfo = !!current.info;
+
+  // Verb options: include ech-form with/without -n (context), and other persons (du/hien/dir)
+  const base = conjBase(current.verb);
+  const echCorrect = echFormWithRule(current.verb, current.gar);
+
+  // show multiple options including the "other without -n" you liked:
+  // - ech with rule (correct)
+  // - ech without n-rule (always drop n) as distractor
+  // - du, hien, dir as distractors
+  const echAlwaysDropN = (base.ech.endsWith("en")) ? base.ech.slice(0,-1) : base.ech;
+
+  // ensure molen distractors are exactly mools/moolt etc: already in IRREG
+  const verbOptions = [
+    {key:"ech_rule", text:echCorrect},
+    {key:"ech_drop", text:echAlwaysDropN},
+    {key:"du", text:base.du},
+    {key:"hien", text:base.hien},
+    {key:"dir", text:base.dir}
   ];
 
-  let verbIndex = 0;
-  const verbPill = makePill(verbForms[0],"verb","verb","v");
+  // dedupe texts while keeping order
+  const seen = new Set();
+  const opts = verbOptions.filter(o=>{
+    if(seen.has(o.text)) return false;
+    seen.add(o.text);
+    return true;
+  });
 
-  verbPill.onclick = ()=>{
-    verbIndex = (verbIndex+1)%verbForms.length;
-    verbPill.textContent = verbForms[verbIndex];
-  };
+  // Bank items with randomized positions
+  const items = [];
 
-  bank.appendChild(makePill("ech","subj","subj","s"));
-  bank.appendChild(verbPill);
-  bank.appendChild(makePill(current.gar,"gar","gar","g"));
+  // subj pill
+  items.push({
+    cls:"subj",
+    type:"SUBJ",
+    id:"bank_subj",
+    text:"ech" // in slot it becomes "Ech" (capital) only, no other auto-fix
+  });
+
+  // verb pill (cycles options)
+  items.push({
+    cls:"verb",
+    type:"VERB",
+    id:"bank_verb",
+    text: opts[0].text,
+    verbOpts: opts
+  });
+
+  // gar pill
+  items.push({
+    cls:"gar",
+    type:"GAR",
+    id:"bank_gar",
+    text: current.gar
+  });
+
+  // info pill optional
+  if(needInfo){
+    items.push({
+      cls:"info",
+      type:"INFO",
+      id:"bank_info",
+      text: current.info
+    });
+  }
+
+  // RANDOMIZE positions in bank
+  const shuffled = shuffle(items);
+
+  shuffled.forEach((it, idx)=>{
+    const stack = makeStack({cls:it.cls, text:it.text, type:it.type, id:it.id, isBank:true}, idx+1);
+    const pill = stack.querySelector(".wordPill");
+    pill.dataset.cls = it.cls;
+
+    // verb cycling
+    if(it.type==="VERB"){
+      pill.dataset.optIndex = "0";
+      pill.dataset.formKey = it.verbOpts[0].key;
+
+      pill.addEventListener("click", ()=>{
+        if(pill.classList.contains("used")) return;
+
+        let i = Number(pill.dataset.optIndex || "0");
+        i = (i + 1) % it.verbOpts.length;
+        pill.dataset.optIndex = String(i);
+        pill.dataset.formKey = it.verbOpts[i].key;
+        pill.textContent = it.verbOpts[i].text;
+      });
+    }
+
+    wrap.appendChild(stack);
+  });
 }
 
-/* ================= CHECK ================= */
+function clearFeedback(){ clearFb(); }
 
-document.getElementById("check").onclick = ()=>{
-  const ok =
-    placed[1]==="subj" &&
-    placed[2]==="verb" &&
-    placed[3]==="gar";
+/* ===================== PLACEMENT ===================== */
+function placeIntoSlot(slotEl, data){
+  if(slotEl.classList.contains("filled")) return;
 
-  document.getElementById("fb").textContent =
-    ok ? "Richteg!" : "Nach net ganz.";
-  document.getElementById("fb").className =
-    "feedback "+(ok?"ok":"bad");
-};
+  const src = document.querySelector(`.bankPill[data-id="${data.id}"]`);
+  if(!src || src.classList.contains("used")) return;
 
-document.getElementById("next").onclick = ()=>{
-  pos = (pos+1)%EXAMPLES.length;
+  const slotNum = Number(slotEl.dataset.slot);
+
+  // Set colour to the DROPPED item colour (so it stays coloured even if wrong)
+  slotEl.classList.remove("subj","verb","gar","info");
+  slotEl.classList.add(data.cls);
+
+  // IMPORTANT: do NOT auto-correct grammar.
+  // Only ortho tweak requested: capitalise Ech when placed.
+  let shownText = data.text;
+  if(data.type === "SUBJ") shownText = "Ech";
+
+  slotEl.textContent = shownText;
+  slotEl.classList.add("filled");
+
+  placed[slotNum] = { type:data.type, text:shownText, formKey:data.formKey || "" };
+
+  // mark source as used
+  src.classList.add("used");
+  src.draggable = false;
+
+  clearFeedback();
+}
+
+/* ===================== CHECK ===================== */
+function checkAnswer(){
+  clearFb();
+  const needInfo = !!current.info;
+  const required = needInfo ? 4 : 3;
+
+  // must fill all required slots
+  for(let i=1;i<=required;i++){
+    const s = document.querySelector(`#slotsRow .wordPill[data-slot="${i}"]`);
+    if(!s || !s.classList.contains("filled")){
+      setFb("Fëll nach all d’Plazen aus.", false);
+      return;
+    }
+  }
+
+  // expected: 1 subj, 2 verb (ech-form with n-rule), 3 gar, 4 info optional
+  const expectedVerb = echFormWithRule(current.verb, current.gar);
+  const expectedGar = current.gar;
+  const expectedInfo = current.info;
+
+  let allOk = true;
+
+  function mark(i, ok){
+    const el = document.querySelector(`#slotsRow .wordPill[data-slot="${i}"]`);
+    flash(el, ok ? "flash-green" : "flash-red");
+  }
+
+  // slot 1
+  const ok1 = placed[1]?.type==="SUBJ" && placed[1]?.text==="Ech";
+  mark(1, ok1);
+  if(!ok1) allOk=false;
+
+  // slot 2: must be VERB and must match the selected conjugation shown (no auto-fix!)
+  const ok2 = placed[2]?.type==="VERB" && placed[2]?.text===expectedVerb;
+  mark(2, ok2);
+  if(!ok2) allOk=false;
+
+  // slot 3
+  const ok3 = placed[3]?.type==="GAR" && placed[3]?.text===expectedGar;
+  mark(3, ok3);
+  if(!ok3) allOk=false;
+
+  // slot 4 if needed
+  if(needInfo){
+    const ok4 = placed[4]?.type==="INFO" && placed[4]?.text===expectedInfo;
+    mark(4, ok4);
+    if(!ok4) allOk=false;
+  }
+
+  setFb(allOk ? "Richteg!" : "Nach net ganz. Probéier nach eng Kéier.", allOk);
+}
+
+/* ===================== ROUND CONTROL ===================== */
+function loadRound(){
+  current = order[pos];
+  document.getElementById("prog").textContent = `${pos+1} / ${order.length}`;
+  clearFeedback();
+
+  renderSlots();
+  renderBank();
+}
+
+function nextRound(){
+  pos++;
+  if(pos >= order.length){
+    order = shuffle(EX);
+    pos = 0;
+  }
   loadRound();
-};
+}
+
+function resetRound(){
+  loadRound();
+}
+
+/* ===================== BUTTONS + INIT ===================== */
+document.getElementById("checkBtn").addEventListener("click", checkAnswer);
+document.getElementById("nextBtn").addEventListener("click", nextRound);
+document.getElementById("resetBtn").addEventListener("click", resetRound);
 
 loadRound();
 </script>
-
 </body>
 </html>
+
 
