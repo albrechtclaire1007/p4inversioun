@@ -1,266 +1,344 @@
 <!DOCTYPE html>
 <html lang="lb">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>P4 – Ausso bauen</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>P4 – Sazstruktur – 2 Spiller</title>
 
-<style>
-  /* FONT */
-  @font-face{
-    font-family:'Schoulschrëft';
-    src:url('https://raw.githubusercontent.com/albrechtclaire1007/schoulschreft/main/schoulschreft_bold%5B2%5D.TTF') format('truetype');
-    font-weight:bold;
-    font-style:normal;
-    font-display:swap;
-  }
+  <style>
+    /* FONT */
+    @font-face{
+      font-family:'Schoulschrëft';
+      src:url('https://raw.githubusercontent.com/albrechtclaire1007/schoulschreft/main/schoulschreft_bold%5B2%5D.TTF') format('truetype');
+      font-weight:bold;
+      font-style:normal;
+      font-display:swap;
+    }
 
-  :root{
-    --purple-mid:#b7a2e5;
-    --purple-light:#ebe3ff;
-    --purple-dark:#6c4aa3;
-    --ink:#2d1844;
-    --white:#fff;
+    :root{
+      --purple-mid:#b7a2e5;
+      --purple-light:#ebe3ff;
+      --purple-dark:#6c4aa3;
+      --ink:#2d1844;
+      --white:#fff;
 
-    --subj:#b7f0c8;   /* green */
-    --verb:#e6dcff;   /* purple */
-    --gar:#ffd9c4;    /* orange */
-    --info:#dbefff;   /* blue */
+      --subj:#b7f0c8;   /* green */
+      --verb:#e6dcff;   /* purple */
+      --gar:#ffd9c4;    /* orange */
+      --info:#dbefff;   /* blue */
 
-    --dash: rgba(108,74,163,.35);
-  }
+      --dash: rgba(108,74,163,.35);
+    }
 
-  *{ margin:0; padding:0; box-sizing:border-box; }
+    *{ margin:0; padding:0; box-sizing:border-box; }
 
-  body{
-    font-family:'Schoulschrëft', system-ui, sans-serif;
-    background:var(--purple-light);
-    padding:16px;
-    color:var(--ink);
-    min-height:100vh;
-  }
+    body{
+      font-family:'Schoulschrëft', system-ui, sans-serif;
+      background:var(--purple-light);
+      padding:16px;
+      color:var(--ink);
+      min-height:100vh;
+    }
 
-  button{
-    font-family:'Schoulschrëft', system-ui, sans-serif;
-    cursor:pointer;
-  }
+    button{
+      font-family:'Schoulschrëft', system-ui, sans-serif;
+      cursor:pointer;
+    }
 
-  .top-bar{
-    max-width:1200px;
-    margin:0 auto 10px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:var(--purple-dark);
-    border-radius:999px;
-    padding:10px 14px;
-    color:var(--white);
-    box-shadow: 0 10px 18px rgba(45,24,68,.12);
-    text-align:center;
-    font-size:1.45rem;
-    line-height:1.1;
-  }
+    /* TOP BAR + TABS */
+    .top-bar{
+      max-width:1200px;
+      margin:0 auto 10px;
+      background:var(--purple-dark);
+      border-radius:999px;
+      padding:10px 14px;
+      color:var(--white);
+      box-shadow: 0 10px 18px rgba(45,24,68,.12);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .top-title{
+      flex:1;
+      text-align:center;
+      font-size:1.35rem;
+      line-height:1.1;
+      opacity:.98;
+      padding:0 8px;
+      min-height:1.2em;
+    }
+    .navBtn{
+      width:40px;
+      height:40px;
+      border-radius:999px;
+      border:2px solid rgba(255,255,255,.95);
+      background:transparent;
+      color:#fff;
+      font-size:1.6rem;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
 
-  .instruction-box{
-    max-width:1200px;
-    margin:0 auto 14px;
-    background:var(--white);
-    border-radius:18px;
-    padding:12px 16px;
-    text-align:center;
-    font-size:1.35rem;
-    border:2px solid rgba(108,74,163,.15);
-  }
+    .tabs{
+      max-width:1200px;
+      margin:0 auto 12px;
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+    .tab{
+      padding:10px 16px;
+      border-radius:999px;
+      border:2px solid rgba(108,74,163,.25);
+      background:#fff;
+      color:var(--ink);
+      font-size:1.15rem;
+    }
+    .tab.active{
+      background:var(--purple-mid);
+      border-color:var(--purple-dark);
+      color:#fff;
+    }
 
-  .row-center{
-    max-width:1200px;
-    margin: 0 auto 14px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-  }
+    .instruction-box{
+      max-width:1200px;
+      margin:0 auto 14px;
+      background:var(--white);
+      border-radius:18px;
+      padding:12px 16px;
+      text-align:center;
+      font-size:1.35rem;
+      border:2px solid rgba(108,74,163,.15);
+    }
 
-  .primary{
-    padding:10px 18px;
-    border-radius:999px;
-    border:2px solid var(--purple-dark);
-    background:var(--purple-mid);
-    color:var(--white);
-    font-size:1.25rem;
-  }
-  .secondary{
-    padding:8px 14px;
-    border-radius:999px;
-    border:2px solid rgba(108,74,163,.25);
-    background:white;
-    color:var(--ink);
-    font-size:1.15rem;
-  }
-  .pill{
-    background:var(--white);
-    border-radius:999px;
-    padding:8px 14px;
-    border:2px solid rgba(108,74,163,.15);
-    font-size:1.2rem;
-  }
+    .row-center{
+      max-width:1200px;
+      margin: 0 auto 14px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
 
-  .board{
-    width:min(1200px, 100%);
-    margin:0 auto;
-    background: rgba(255,255,255,.35);
-    border:2px solid rgba(108,74,163,.10);
-    border-radius:22px;
-    padding:14px;
-  }
+    .primary{
+      padding:10px 18px;
+      border-radius:999px;
+      border:2px solid var(--purple-dark);
+      background:var(--purple-mid);
+      color:var(--white);
+      font-size:1.25rem;
+    }
+    .secondary{
+      padding:8px 14px;
+      border-radius:999px;
+      border:2px solid rgba(108,74,163,.25);
+      background:white;
+      color:var(--ink);
+      font-size:1.15rem;
+    }
+    .pill{
+      background:var(--white);
+      border-radius:999px;
+      padding:8px 14px;
+      border:2px solid rgba(108,74,163,.15);
+      font-size:1.2rem;
+    }
 
-  /* Sentence slots in ONE ROW */
-  .row{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:14px;
-    flex-wrap:nowrap;
-    overflow-x:auto;
-    padding-bottom:4px;
-    -webkit-overflow-scrolling: touch;
-  }
-  .row::-webkit-scrollbar{ height:10px; }
-  .row::-webkit-scrollbar-thumb{ background: rgba(108,74,163,.18); border-radius:999px; }
+    .board{
+      width:min(1200px, 100%);
+      margin:0 auto;
+      background: rgba(255,255,255,.35);
+      border:2px solid rgba(108,74,163,.10);
+      border-radius:22px;
+      padding:14px;
+    }
 
-  .stack{
-    flex: 1 1 0;
-    min-width: 160px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:10px;
-  }
+    /* ONE-LINE ROWS */
+    .row{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:14px;
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      padding-bottom:4px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .row::-webkit-scrollbar{ height:10px; }
+    .row::-webkit-scrollbar-thumb{ background: rgba(108,74,163,.18); border-radius:999px; }
 
-  .wordPill{
-    width:100%;
-    border-radius:999px;
-    padding:14px 14px;
-    font-size:1.95rem;
-    text-align:center;
-    border:2px solid rgba(0,0,0,.06);
-    user-select:none;
-    word-break:break-word;
-  }
+    .stack{
+      flex: 1 1 0;
+      min-width: 160px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+    }
 
-  .numCircle{
-    width:44px;
-    height:44px;
-    border-radius:999px;
-    border:3px solid #000;
-    background:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:1.4rem;
-    line-height:1;
-  }
+    .wordPill{
+      width:100%;
+      border-radius:999px;
+      padding:14px 14px;
+      font-size:1.95rem;
+      text-align:center;
+      border:2px solid rgba(0,0,0,.06);
+      user-select:none;
+      word-break:break-word;
+    }
 
-  .subj{ background: var(--subj); }
-  .verb{ background: var(--verb); }
-  .gar { background: var(--gar); }
-  .info{ background: var(--info); }
+    .numCircle{
+      width:44px;
+      height:44px;
+      border-radius:999px;
+      border:3px solid #000;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.4rem;
+      line-height:1;
+    }
 
-  /* Bank pills */
-  .bankPill{ cursor:grab; }
-  .bankPill:active{ transform: scale(.99); }
-  .bankPill.used{ opacity:.25; filter:grayscale(.2); cursor:default; }
+    .subj{ background: var(--subj); }
+    .verb{ background: var(--verb); }
+    .gar { background: var(--gar); }
+    .info{ background: var(--info); }
 
-  /* Verb pill: cycle hint */
-  .cycleHint{
-    font-size:1rem;
-    opacity:.6;
-    margin-top:-4px;
-    text-align:center;
-  }
+    /* Bank pills */
+    .bankPill{ cursor:grab; }
+    .bankPill:active{ transform: scale(.99); }
+    .bankPill.used{ opacity:.25; filter:grayscale(.2); cursor:default; }
 
-  /* Drop slots */
-  .drop{
-    border: 2px dashed var(--dash);
-    background: rgba(255,255,255,.75);
-  }
-  .drop.over{ outline:4px solid rgba(108,74,163,.18); outline-offset:2px; }
-  .drop.filled{ border-style:solid; }
+    /* Drop slots */
+    .drop{
+      border: 2px dashed var(--dash);
+      background: rgba(255,255,255,.75);
+    }
+    .drop.over{ outline:4px solid rgba(108,74,163,.18); outline-offset:2px; }
+    .drop.filled{ border-style:solid; } /* keep colours visible */
 
-  /* punctuation aligned with pills */
-  .punctCol{
-    width:38px;
-    flex: 0 0 38px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:10px;
-  }
-  .punctSpacer{ height:4px; }
-  .punct{
-    font-size:2.35rem;
-    color: var(--purple-dark);
-    line-height:1;
-    margin-top: 8px;
-  }
-  .punctGhost{
-    width:38px;
-    height:44px;
-    opacity:0;
-  }
+    /* punctuation aligned with pills */
+    .punctCol{
+      width:38px;
+      flex: 0 0 38px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+    }
+    .punctSpacer{ height:4px; }
+    .punct{
+      font-size:2.35rem;
+      color: var(--purple-dark);
+      line-height:1;
+      margin-top: 8px;
+    }
+    .punctGhost{
+      width:38px;
+      height:44px;
+      opacity:0;
+    }
 
-  .feedback{
-    margin: 10px auto 2px;
-    min-height:1.4em;
-    font-size:1.35rem;
-    text-align:center;
-  }
-  .feedback.ok{ color:#117a3a; }
-  .feedback.bad{ color:#b02323; }
+    .feedback{
+      margin: 10px auto 2px;
+      min-height:1.4em;
+      font-size:1.35rem;
+      text-align:center;
+    }
+    .feedback.ok{ color:#117a3a; }
+    .feedback.bad{ color:#b02323; }
 
-  .flash-green{ animation: flashGreen .25s ease; }
-  .flash-red{ animation: flashRed .25s ease; }
-  @keyframes flashGreen{
-    0%{ box-shadow:none; }
-    50%{ box-shadow: 0 0 0 6px rgba(183,240,200,.95); }
-    100%{ box-shadow:none; }
-  }
-  @keyframes flashRed{
-    0%{ box-shadow:none; }
-    50%{ box-shadow: 0 0 0 6px rgba(255,204,204,.95); }
-    100%{ box-shadow:none; }
-  }
+    .flash-green{ animation: flashGreen .25s ease; }
+    .flash-red{ animation: flashRed .25s ease; }
+    @keyframes flashGreen{
+      0%{ box-shadow:none; }
+      50%{ box-shadow: 0 0 0 6px rgba(183,240,200,.95); }
+      100%{ box-shadow:none; }
+    }
+    @keyframes flashRed{
+      0%{ box-shadow:none; }
+      50%{ box-shadow: 0 0 0 6px rgba(255,204,204,.95); }
+      100%{ box-shadow:none; }
+    }
 
-  @media (max-width:520px){
-    .wordPill{ font-size:1.65rem; padding:12px 12px; }
-    .numCircle{ width:40px; height:40px; font-size:1.25rem; }
-    .punct{ font-size:2.1rem; margin-top: 6px; }
-    .stack{ min-width: 140px; }
-  }
-</style>
+    .magic{ animation: magicPop .45s ease; }
+    @keyframes magicPop{
+      0%   { transform:scale(1); filter:brightness(1); }
+      35%  { transform:scale(1.08); filter:brightness(1.18); }
+      100% { transform:scale(1); filter:brightness(1); }
+    }
+
+    .game{ display:none; }
+    .game.active{ display:block; }
+
+    @media (max-width:520px){
+      .wordPill{ font-size:1.65rem; padding:12px 12px; }
+      .numCircle{ width:40px; height:40px; font-size:1.25rem; }
+      .punct{ font-size:2.1rem; margin-top: 6px; }
+      .stack{ min-width: 140px; }
+      .top-title{ font-size:1.2rem; }
+    }
+  </style>
 </head>
 
 <body>
-  <div class="top-bar">P4 – Ausso bauen</div>
-
-  <div class="instruction-box">
-    Lies d’Wierder a bau eng <strong>Ausso</strong>. Zéi d'Sazdeeler an déi richteg Reiefolleg. (du kanns och falsch probéieren)
+  <div class="top-bar">
+    <button class="navBtn" id="prevGame" aria-label="Viregt Spill">‹</button>
+    <div class="top-title" id="topTitle">1. Ausso bauen</div>
+    <button class="navBtn" id="nextGame" aria-label="Nächst Spill">›</button>
   </div>
 
-  <div class="row-center">
-    <button class="secondary" id="resetBtn">Reset</button>
-    <button class="secondary" id="checkBtn">Kontrolléieren</button>
-    <button class="primary" id="nextBtn">Nächst Beispill</button>
-    <div class="pill" id="prog">1 / …</div>
+  <div class="tabs">
+    <button class="tab active" id="tab1">1. Ausso bauen</button>
+    <button class="tab" id="tab2">2. Inversioun</button>
   </div>
 
-  <div class="board">
-    <div class="row" id="slotsRow"></div>
-    <div style="height:14px;"></div>
-    <div class="row" id="bankRow"></div>
-    <div class="feedback" id="fb"></div>
-  </div>
+  <!-- ===================== GAME 1 ===================== -->
+  <section class="game active" id="game1">
+    <div class="instruction-box">
+      Lies d’Wierder a bau eng <strong>Ausso</strong>. Zéi d'Sazdeeler an déi richteg Reiefolleg.
+    </div>
+
+    <div class="row-center">
+      <button class="secondary" id="g1Reset">Reset</button>
+      <button class="secondary" id="g1Check">Kontrolléieren</button>
+      <button class="primary" id="g1Next">Nächst Beispill</button>
+      <div class="pill" id="g1Prog">1 / 30</div>
+    </div>
+
+    <div class="board">
+      <div class="row" id="g1SlotsRow"></div>
+      <div style="height:14px;"></div>
+      <div class="row" id="g1BankRow"></div>
+      <div class="feedback" id="g1Fb"></div>
+    </div>
+  </section>
+
+  <!-- ===================== GAME 2 ===================== -->
+  <section class="game" id="game2">
+    <div class="instruction-box">
+      Lies de Saz a kuck der d'Sazdeeler un. Verwandel de Saz an eng Fro oder d'Fro an e Saz andeems du d'Sazdeeler op déi richteg Plaz zitts.
+    </div>
+
+    <div class="row-center">
+      <button class="secondary" id="invResetBtn">Reset</button>
+      <button class="secondary" id="invCheckBtn">Kontrolléieren</button>
+      <button class="primary" id="invNextBtn">Nächst Beispill</button>
+      <div class="pill" id="invProg">1 / 25</div>
+    </div>
+
+    <div class="board">
+      <div class="row" id="invTopRow"></div>
+      <div style="height:14px;"></div>
+      <div class="row" id="invBottomRow"></div>
+      <div class="feedback" id="invFb"></div>
+    </div>
+  </section>
 
 <script>
 /* ===================== HELPERS ===================== */
@@ -273,32 +351,42 @@ function shuffle(arr){
   return a;
 }
 function flash(el, cls){
-  el.classList.remove("flash-green","flash-red");
+  el.classList.remove("flash-green","flash-red","magic");
   void el.offsetWidth;
   el.classList.add(cls);
 }
-function setFb(text, ok){
-  const el = document.getElementById("fb");
+function setFb(elId, text, ok){
+  const el = document.getElementById(elId);
   el.textContent = text;
   el.className = "feedback " + (ok ? "ok" : "bad");
 }
-function clearFb(){
-  const el = document.getElementById("fb");
+function clearFb(elId){
+  const el = document.getElementById(elId);
   el.textContent = "";
   el.className = "feedback";
 }
+function magic(el){
+  el.classList.remove("magic");
+  void el.offsetWidth;
+  el.classList.add("magic");
+}
+function cap1(s){
+  if(!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
-/* ===================== CONJUGATION (REMINDER TABLE) ===================== */
-/* Based on your pages (and the earlier set) */
+/* ===================== VERB CONJUGATION (from your tables) ===================== */
+const PERSON_KEYS = ["ech","du","hienhatt","mir","dir","si"];
+
 const IRREG = {
-  fueren:    { ech:"fueren", du:"fiers",  hien:"fiert",  dir:"fuert"  },
-  danzen:    { ech:"danzen", du:"danz",   hien:"danzt",  dir:"danzt"  },
-  liesen:    { ech:"liesen", du:"lies",   hien:"liest",  dir:"liest"  },
-  schwammen: { ech:"schwammen", du:"schwëmms", hien:"schwëmmt", dir:"schwammt" },
-  molen:     { ech:"molen", du:"mools",   hien:"moolt",  dir:"moolt"  },
-  lafen:     { ech:"lafen", du:"leefs",   hien:"leeft",  dir:"laaft"  },
-  maachen:   { ech:"maachen", du:"méchs", hien:"mécht",  dir:"maacht" },
-  spillen:   { ech:"spillen", du:"spills",hien:"spillt", dir:"spillt" }
+  fueren:    { ech:"fueren", du:"fiers",     hienhatt:"fiert",    mir:"fueren", dir:"fuert",  si:"fueren" },
+  danzen:    { ech:"danzen", du:"danz",      hienhatt:"danzt",    mir:"danzen", dir:"danzt",  si:"danzen" },
+  liesen:    { ech:"liesen", du:"lies",      hienhatt:"liest",    mir:"liesen", dir:"liest",  si:"liesen" },
+  schwammen: { ech:"schwammen", du:"schwëmms", hienhatt:"schwëmmt", mir:"schwammen", dir:"schwammt", si:"schwammen" },
+  molen:     { ech:"molen", du:"mools",      hienhatt:"moolt",    mir:"molen",  dir:"moolt",  si:"molen" },
+  lafen:     { ech:"lafen", du:"leefs",      hienhatt:"leeft",    mir:"lafen",  dir:"laaft",  si:"lafen" },
+  maachen:   { ech:"maachen", du:"méchs",    hienhatt:"mécht",    mir:"maachen",dir:"maacht", si:"maachen" },
+  spillen:   { ech:"spillen", du:"spills",   hienhatt:"spillt",   mir:"spillen",dir:"spillt", si:"spillen" }
 };
 
 const REGULAR = ["lauschteren","kucken","boxen","kachen","léieren","raschten","spadséieren","telefonéieren"];
@@ -306,90 +394,35 @@ const REGULAR = ["lauschteren","kucken","boxen","kachen","léieren","raschten","
 function stemOf(inf){
   return inf.endsWith("en") ? inf.slice(0,-2) : inf;
 }
-
-function conjBase(inf){
-  if(IRREG[inf]){
-    const v = IRREG[inf];
-    return {
-      ech: v.ech,
-      du: v.du,
-      hien: v.hien,
-      mir: v.ech,
-      dir: v.dir,
-      si: v.ech
-    };
-  }
+function conjBaseAll(inf){
+  if(IRREG[inf]) return IRREG[inf];
   const st = stemOf(inf);
-  return { ech: st+"en", du: st+"s", hien: st+"t", mir: st+"en", dir: st+"t", si: st+"en" };
+  return { ech:st+"en", du:st+"s", hienhatt:st+"t", mir:st+"en", dir:st+"t", si:st+"en" };
 }
 
 /* ===================== -N RULE (context sensitive) =====================
-If ech-form ends with "en":
+If ech-verb ends with "en":
 - drop final -n ONLY if next word does NOT start with "n"
 So:
   Ech lauschteren gär     -> Ech lauschtere gär
   Ech lauschteren net gär -> Ech lauschteren net gär
+Only applied for pronoun "ech" (as per your request history).
 */
 function applyNRuleBeforeNextWord(echVerbForm, nextWord){
   const next = (nextWord || "").trim().toLowerCase();
-  const nextStartsWithN = next.startsWith("n"); // "net ..."
+  const nextStartsWithN = next.startsWith("n");
   if(echVerbForm.endsWith("en") && !nextStartsWithN){
-    return echVerbForm.slice(0, -1); // remove only final "n"
+    return echVerbForm.slice(0, -1);
   }
   return echVerbForm;
 }
-
-/* In this game, ech verb is always followed by current.gar */
-function echFormWithRule(inf, gar){
-  const base = conjBase(inf).ech;
-  return applyNRuleBeforeNextWord(base, gar);
+function echFormWithRule(inf, garWord){
+  const base = conjBaseAll(inf).ech;
+  return applyNRuleBeforeNextWord(base, garWord);
 }
 
-/* ===================== EXAMPLES (30, incl. info) ===================== */
-const INFO_MAP = {
-  maachen: ["Sport","Musek"],
-  lauschteren: ["Musek"],
-  kucken: ["Tëlee"],
-  spillen: ["Fussball","Basket"],
-  fueren: ["Skateboard","Vëlo"]
-};
-
-const VERB_POOL = [
-  "fueren","danzen","liesen","schwammen","molen","lafen","maachen","spillen",
-  "lauschteren","kucken","boxen","kachen","léieren","raschten","spadséieren","telefonéieren"
-];
-
-function makeExamples(n=30){
-  const out = [];
-  while(out.length < n){
-    const verb = VERB_POOL[Math.floor(Math.random()*VERB_POOL.length)];
-    const gar = Math.random() < 0.5 ? "gär" : "net gär";
-
-    let info = null;
-    if(INFO_MAP[verb] && Math.random() < 0.75){
-      const arr = INFO_MAP[verb];
-      info = arr[Math.floor(Math.random()*arr.length)];
-    }else if(Math.random() < 0.35){
-      // occasional extra info from a small pool to reach variety
-      const extras = ["am Park","doheem","mat Frënn"];
-      info = extras[Math.floor(Math.random()*extras.length)];
-    }
-
-    out.push({ pron:"ech", verb, gar, info });
-  }
-  return out;
-}
-
-const EX = makeExamples(30);
-let order = shuffle(EX);
-let pos = 0;
-let current = null;
-
-/* placement record: by slot index => {type, text} */
-let placed = {};
-
-/* ===================== UI BUILD ===================== */
-function makeStack({cls,text,type,id,isBank=false,isDrop=false}, number){
+/* ===================== SHARED UI BUILDERS ===================== */
+function makeStack({cls,text,type,id,isBank=false,isDrop=false}, number, extraUnderText=null){
   const stack = document.createElement("div");
   stack.className = "stack";
 
@@ -398,6 +431,7 @@ function makeStack({cls,text,type,id,isBank=false,isDrop=false}, number){
   pill.textContent = text;
   pill.dataset.type = type;
   pill.dataset.id = id;
+  pill.dataset.cls = cls;
 
   if(isBank){
     pill.draggable = true;
@@ -420,11 +454,13 @@ function makeStack({cls,text,type,id,isBank=false,isDrop=false}, number){
   stack.appendChild(pill);
   stack.appendChild(num);
 
-  // small hint under verb bank pill
-  if(isBank && type==="VERB"){
+  if(extraUnderText){
     const hint = document.createElement("div");
-    hint.className = "cycleHint";
-    hint.textContent = "klick fir d’Form ze wiesselen";
+    hint.style.fontSize = "1rem";
+    hint.style.opacity = ".6";
+    hint.style.marginTop = "-6px";
+    hint.style.textAlign = "center";
+    hint.textContent = extraUnderText;
     stack.appendChild(hint);
   }
 
@@ -448,252 +484,455 @@ function makePunctColumn(punctChar){
   return col;
 }
 
-function renderSlots(){
-  const wrap = document.getElementById("slotsRow");
-  wrap.innerHTML = "";
+/* =========================================================
+   GAME 1: AUSSO BAUEN (ALL PRONOUNS) — 30 EXAMPLES
+   Structure: 1 SUBJ, 2 VERB (chosen form), 3 (net) gär, 4 INFO optional
+========================================================= */
+const INFO_MAP = {
+  maachen: ["Sport","Musek"],
+  lauschteren: ["Musek"],
+  kucken: ["Tëlee"],
+  spillen: ["Fussball","Basket"],
+  fueren: ["Skateboard","Vëlo"]
+};
 
-  const needInfo = !!current.info;
+const VERB_POOL = [
+  "fueren","danzen","liesen","schwammen","molen","lafen","maachen","spillen",
+  "lauschteren","kucken","boxen","kachen","léieren","raschten","spadséieren","telefonéieren"
+];
+
+const PRONOUNS_G1 = ["ech","du","hien/hatt","mir","dir","si"];
+
+function toPersonKeyFromPron(pron){
+  if(pron==="ech") return "ech";
+  if(pron==="du") return "du";
+  if(pron==="mir") return "mir";
+  if(pron==="dir") return "dir";
+  if(pron==="si") return "si";
+  return "hienhatt"; // "hien/hatt"
+}
+
+function makeExamplesG1(n=30){
+  const out=[];
+  while(out.length<n){
+    const verb = VERB_POOL[Math.floor(Math.random()*VERB_POOL.length)];
+    const gar = Math.random()<0.5 ? "gär" : "net gär";
+    const pron = PRONOUNS_G1[Math.floor(Math.random()*PRONOUNS_G1.length)];
+
+    let info=null;
+    if(INFO_MAP[verb] && Math.random()<0.75){
+      const arr=INFO_MAP[verb];
+      info = arr[Math.floor(Math.random()*arr.length)];
+    }else if(Math.random()<0.25){
+      const extras=["am Park","doheem","mat Frënn"];
+      info = extras[Math.floor(Math.random()*extras.length)];
+    }
+
+    out.push({pron, verb, gar, info});
+  }
+  return out;
+}
+
+let g1Order = shuffle(makeExamplesG1(30));
+let g1Pos = 0;
+let g1Current = null;
+let g1Placed = {}; // slot -> {type,text,formKey}
+
+function g1CorrectVerbText(){
+  const pk = toPersonKeyFromPron(g1Current.pron);
+  const base = conjBaseAll(g1Current.verb)[pk];
+  if(pk==="ech") return echFormWithRule(g1Current.verb, g1Current.gar);
+  return base;
+}
+
+function g1PronDisplay(pron){
+  // you asked: Ech must be capital when placed
+  if(pron==="ech") return "Ech";
+  return pron; // du / hien/hatt / mir / dir / si
+}
+
+function g1Render(){
+  g1Current = g1Order[g1Pos];
+  document.getElementById("g1Prog").textContent = `${g1Pos+1} / ${g1Order.length}`;
+  clearFb("g1Fb");
+  g1Placed = {};
+
+  const needInfo = !!g1Current.info;
   const slotCount = needInfo ? 4 : 3;
 
-  placed = {};
+  // slots
+  const slotsRow = document.getElementById("g1SlotsRow");
+  slotsRow.innerHTML = "";
   for(let i=1;i<=slotCount;i++){
-    const expectedType = (i===1) ? "SUBJ" : (i===2) ? "VERB" : (i===3) ? "GAR" : "INFO";
-    const cls = expectedType==="SUBJ" ? "subj" : expectedType==="VERB" ? "verb" : expectedType==="GAR" ? "gar" : "info";
-    const stack = makeStack({cls, text:String(i), type:expectedType, id:`slot_${i}`, isDrop:true}, i);
+    const expectedType = (i===1)?"SUBJ":(i===2)?"VERB":(i===3)?"GAR":"INFO";
+    const cls = expectedType==="SUBJ"?"subj":expectedType==="VERB"?"verb":expectedType==="GAR"?"gar":"info";
+    const stack = makeStack({cls, text:String(i), type:expectedType, id:`g1_slot_${i}`, isDrop:true}, i);
     const pill = stack.querySelector(".wordPill");
-
     pill.dataset.slot = String(i);
     pill.dataset.expected = expectedType;
 
-    pill.addEventListener("dragover", (e)=>{ e.preventDefault(); pill.classList.add("over"); });
-    pill.addEventListener("dragleave", ()=> pill.classList.remove("over"));
-    pill.addEventListener("drop", (e)=>{
+    pill.addEventListener("dragover",(e)=>{ e.preventDefault(); pill.classList.add("over"); });
+    pill.addEventListener("dragleave",()=> pill.classList.remove("over"));
+    pill.addEventListener("drop",(e)=>{
       e.preventDefault();
       pill.classList.remove("over");
       let data=null;
       try{ data = JSON.parse(e.dataTransfer.getData("text/plain")); }catch(_){}
       if(!data) return;
-      placeIntoSlot(pill, data);
+      g1PlaceIntoSlot(pill, data);
     });
 
-    wrap.appendChild(stack);
+    slotsRow.appendChild(stack);
   }
+  slotsRow.appendChild(makePunctColumn(".")); // affirmative
 
-  wrap.appendChild(makePunctColumn(".")); // always affirmative in this game
-}
+  // bank items randomized
+  const bankRow = document.getElementById("g1BankRow");
+  bankRow.innerHTML = "";
 
-function renderBank(){
-  const wrap = document.getElementById("bankRow");
-  wrap.innerHTML = "";
+  const baseAll = conjBaseAll(g1Current.verb);
+  const pk = toPersonKeyFromPron(g1Current.pron);
 
-  const needInfo = !!current.info;
+  // options for verb cycling: include correct form + other persons as distractors
+  // Important: do NOT auto-correct later; we place exactly what is selected.
+  const correctVerb = g1CorrectVerbText();
+  const echBase = conjBaseAll(g1Current.verb).ech;
+  const echAlwaysDropN = (echBase.endsWith("en")) ? echBase.slice(0,-1) : echBase;
 
-  // Verb options: include ech-form with/without -n (context), and other persons (du/hien/dir)
-  const base = conjBase(current.verb);
-  const echCorrect = echFormWithRule(current.verb, current.gar);
-
-  // show multiple options including the "other without -n" you liked:
-  // - ech with rule (correct)
-  // - ech without n-rule (always drop n) as distractor
-  // - du, hien, dir as distractors
-  const echAlwaysDropN = (base.ech.endsWith("en")) ? base.ech.slice(0,-1) : base.ech;
-
-  // ensure molen distractors are exactly mools/moolt etc: already in IRREG
-  const verbOptions = [
-    {key:"ech_rule", text:echCorrect},
-    {key:"ech_drop", text:echAlwaysDropN},
-    {key:"du", text:base.du},
-    {key:"hien", text:base.hien},
-    {key:"dir", text:base.dir}
+  const rawOpts = [
+    {key:"correct", text: correctVerb},
+    {key:"ech_drop", text: (pk==="ech") ? echAlwaysDropN : echAlwaysDropN}, // still a distractor
+    {key:"du", text: baseAll.du},
+    {key:"hienhatt", text: baseAll.hienhatt},
+    {key:"dir", text: baseAll.dir}
   ];
 
-  // dedupe texts while keeping order
+  // dedupe
   const seen = new Set();
-  const opts = verbOptions.filter(o=>{
+  const verbOpts = rawOpts.filter(o=>{
     if(seen.has(o.text)) return false;
     seen.add(o.text);
     return true;
   });
 
-  // Bank items with randomized positions
   const items = [];
+  items.push({cls:"subj", type:"SUBJ", id:"g1_bank_subj", text:g1Current.pron});
+  items.push({cls:"verb", type:"VERB", id:"g1_bank_verb", text:verbOpts[0].text, verbOpts});
+  items.push({cls:"gar", type:"GAR", id:"g1_bank_gar", text:g1Current.gar});
+  if(needInfo) items.push({cls:"info", type:"INFO", id:"g1_bank_info", text:g1Current.info});
 
-  // subj pill
-  items.push({
-    cls:"subj",
-    type:"SUBJ",
-    id:"bank_subj",
-    text:"ech" // in slot it becomes "Ech" (capital) only, no other auto-fix
-  });
-
-  // verb pill (cycles options)
-  items.push({
-    cls:"verb",
-    type:"VERB",
-    id:"bank_verb",
-    text: opts[0].text,
-    verbOpts: opts
-  });
-
-  // gar pill
-  items.push({
-    cls:"gar",
-    type:"GAR",
-    id:"bank_gar",
-    text: current.gar
-  });
-
-  // info pill optional
-  if(needInfo){
-    items.push({
-      cls:"info",
-      type:"INFO",
-      id:"bank_info",
-      text: current.info
-    });
-  }
-
-  // RANDOMIZE positions in bank
-  const shuffled = shuffle(items);
-
-  shuffled.forEach((it, idx)=>{
-    const stack = makeStack({cls:it.cls, text:it.text, type:it.type, id:it.id, isBank:true}, idx+1);
+  shuffle(items).forEach((it, idx)=>{
+    const stack = makeStack(
+      {cls:it.cls, text:it.text, type:it.type, id:it.id, isBank:true},
+      idx+1,
+      (it.type==="VERB") ? "klick fir d’Form ze wiesselen" : null
+    );
     const pill = stack.querySelector(".wordPill");
-    pill.dataset.cls = it.cls;
 
-    // verb cycling
     if(it.type==="VERB"){
       pill.dataset.optIndex = "0";
       pill.dataset.formKey = it.verbOpts[0].key;
-
       pill.addEventListener("click", ()=>{
         if(pill.classList.contains("used")) return;
-
         let i = Number(pill.dataset.optIndex || "0");
-        i = (i + 1) % it.verbOpts.length;
+        i = (i+1) % it.verbOpts.length;
         pill.dataset.optIndex = String(i);
         pill.dataset.formKey = it.verbOpts[i].key;
         pill.textContent = it.verbOpts[i].text;
       });
     }
 
-    wrap.appendChild(stack);
+    bankRow.appendChild(stack);
   });
 }
 
-function clearFeedback(){ clearFb(); }
-
-/* ===================== PLACEMENT ===================== */
-function placeIntoSlot(slotEl, data){
+function g1PlaceIntoSlot(slotEl, data){
   if(slotEl.classList.contains("filled")) return;
 
-  const src = document.querySelector(`.bankPill[data-id="${data.id}"]`);
+  const src = document.querySelector(`#g1BankRow .bankPill[data-id="${data.id}"]`);
   if(!src || src.classList.contains("used")) return;
 
-  const slotNum = Number(slotEl.dataset.slot);
-
-  // Set colour to the DROPPED item colour (so it stays coloured even if wrong)
+  // keep DROPPED item colour in slot (even if wrong)
   slotEl.classList.remove("subj","verb","gar","info");
   slotEl.classList.add(data.cls);
 
-  // IMPORTANT: do NOT auto-correct grammar.
-  // Only ortho tweak requested: capitalise Ech when placed.
+  // IMPORTANT: do not auto-correct. Only requested tweak: Ech capital when placed.
   let shownText = data.text;
-  if(data.type === "SUBJ") shownText = "Ech";
+  if(data.type === "SUBJ" && (data.text === "ech" || data.text === "Ech")) shownText = "Ech";
 
   slotEl.textContent = shownText;
   slotEl.classList.add("filled");
 
-  placed[slotNum] = { type:data.type, text:shownText, formKey:data.formKey || "" };
+  const slotNum = Number(slotEl.dataset.slot);
+  g1Placed[slotNum] = { type:data.type, text:shownText, formKey:data.formKey || "" };
 
-  // mark source as used
   src.classList.add("used");
   src.draggable = false;
 
-  clearFeedback();
+  clearFb("g1Fb");
 }
 
-/* ===================== CHECK ===================== */
-function checkAnswer(){
-  clearFb();
-  const needInfo = !!current.info;
+function g1Check(){
+  const needInfo = !!g1Current.info;
   const required = needInfo ? 4 : 3;
 
-  // must fill all required slots
   for(let i=1;i<=required;i++){
-    const s = document.querySelector(`#slotsRow .wordPill[data-slot="${i}"]`);
-    if(!s || !s.classList.contains("filled")){
-      setFb("Fëll nach all d’Plazen aus.", false);
+    const el = document.querySelector(`#g1SlotsRow .wordPill[data-slot="${i}"]`);
+    if(!el || !el.classList.contains("filled")){
+      setFb("g1Fb","Fëll nach all d’Plazen aus.", false);
       return;
     }
   }
 
-  // expected: 1 subj, 2 verb (ech-form with n-rule), 3 gar, 4 info optional
-  const expectedVerb = echFormWithRule(current.verb, current.gar);
-  const expectedGar = current.gar;
-  const expectedInfo = current.info;
-
+  const expectedVerb = g1CorrectVerbText();
   let allOk = true;
 
-  function mark(i, ok){
-    const el = document.querySelector(`#slotsRow .wordPill[data-slot="${i}"]`);
-    flash(el, ok ? "flash-green" : "flash-red");
+  const s1 = document.querySelector(`#g1SlotsRow .wordPill[data-slot="1"]`);
+  const s2 = document.querySelector(`#g1SlotsRow .wordPill[data-slot="2"]`);
+  const s3 = document.querySelector(`#g1SlotsRow .wordPill[data-slot="3"]`);
+  const s4 = document.querySelector(`#g1SlotsRow .wordPill[data-slot="4"]`);
+
+  const ok1 = g1Placed[1]?.type==="SUBJ" && g1Placed[1]?.text===g1PronDisplay(g1Current.pron);
+  const ok2 = g1Placed[2]?.type==="VERB" && g1Placed[2]?.text===expectedVerb; // must match chosen/placed
+  const ok3 = g1Placed[3]?.type==="GAR"  && g1Placed[3]?.text===g1Current.gar;
+  const ok4 = !needInfo || (g1Placed[4]?.type==="INFO" && g1Placed[4]?.text===g1Current.info);
+
+  flash(s1, ok1 ? "flash-green":"flash-red");
+  flash(s2, ok2 ? "flash-green":"flash-red");
+  flash(s3, ok3 ? "flash-green":"flash-red");
+  if(needInfo) flash(s4, ok4 ? "flash-green":"flash-red");
+
+  allOk = ok1 && ok2 && ok3 && ok4;
+  setFb("g1Fb", allOk ? "Richteg!" : "Nach net ganz. Probéier nach eng Kéier.", allOk);
+}
+
+document.getElementById("g1Reset").addEventListener("click", g1Render);
+document.getElementById("g1Check").addEventListener("click", g1Check);
+document.getElementById("g1Next").addEventListener("click", ()=>{
+  g1Pos = (g1Pos+1) % g1Order.length;
+  g1Render();
+});
+
+/* =========================================================
+   GAME 2: INVERSIOUN (Ech ↔ Du) — 25 EXAMPLES
+   Top can be AFF (Ech + verb(ech with n-rule) + gar + info?) OR Q (Verb(Du, capital) + du + gar + info?)
+   Bottom must be the other form.
+========================================================= */
+const INV_EXAMPLES = [
+  { verb:"spillen", gar:"gär", info:"Fussball" },
+  { verb:"kucken", gar:"net gär", info:"Tëlee" },
+  { verb:"lauschteren", gar:"gär", info:"Musek" },
+  { verb:"liesen", gar:"gär", info:null },
+  { verb:"schwammen", gar:"net gär", info:null },
+  { verb:"danzen", gar:"gär", info:null },
+  { verb:"lafen", gar:"gär", info:null },
+  { verb:"maachen", gar:"net gär", info:"Sport" },
+  { verb:"telefonéieren", gar:"gär", info:null },
+  { verb:"raschten", gar:"net gär", info:null },
+  { verb:"kachen", gar:"gär", info:null },
+  { verb:"spadséieren", gar:"gär", info:null },
+  { verb:"molen", gar:"net gär", info:null },
+  { verb:"léieren", gar:"gär", info:null },
+  { verb:"boxen", gar:"net gär", info:null },
+  { verb:"fueren", gar:"gär", info:"Vëlo" },
+  { verb:"spillen", gar:"net gär", info:"Basket" },
+  { verb:"kucken", gar:"gär", info:"Filmer" },
+  { verb:"lauschteren", gar:"net gär", info:"Radio" },
+  { verb:"maachen", gar:"gär", info:"Musek" },
+  { verb:"danzen", gar:"net gär", info:null },
+  { verb:"lafen", gar:"net gär", info:"laang Strecken" },
+  { verb:"liesen", gar:"net gär", info:"Zeitungen" },
+  { verb:"telefonéieren", gar:"net gär", info:"laang" },
+  { verb:"spadséieren", gar:"net gär", info:"an der Reen" }
+];
+
+let invOrder = shuffle(INV_EXAMPLES);
+let invPos = 0;
+let invCurrent = null;
+let invModeGiven = "AFF"; // "AFF" or "Q"
+let invNeedInfo = false;
+let invPlaced = {}; // slot -> {token, text}
+
+function invTopStructure(){
+  // AFF top: 1 Ech, 2 verb ech(with rule), 3 gar, 4 info?
+  // Q top:   1 Verb(Du, capital), 2 du, 3 gar, 4 info?
+  const base = [
+    invModeGiven==="AFF"
+      ? {token:"SUBJ", cls:"subj", text:"Ech"}
+      : {token:"VERB", cls:"verb", text:cap1(conjBaseAll(invCurrent.verb).du)},
+    invModeGiven==="AFF"
+      ? {token:"VERB", cls:"verb", text:echFormWithRule(invCurrent.verb, invCurrent.gar)}
+      : {token:"SUBJ", cls:"subj", text:"du"},
+    {token:"GAR", cls:"gar", text:invCurrent.gar}
+  ];
+  if(invNeedInfo) base.push({token:"INFO", cls:"info", text:invCurrent.info});
+  return base;
+}
+
+function invTargetStructure(){
+  // If given AFF -> target Q: 1 Verb(Du, capital), 2 du, 3 gar, 4 info?
+  // If given Q   -> target AFF: 1 Ech, 2 verb ech(with rule), 3 gar, 4 info?
+  const targetIsQuestion = (invModeGiven==="AFF");
+  const base = [
+    targetIsQuestion
+      ? {token:"VERB", cls:"verb", text:cap1(conjBaseAll(invCurrent.verb).du)}
+      : {token:"SUBJ", cls:"subj", text:"Ech"},
+    targetIsQuestion
+      ? {token:"SUBJ", cls:"subj", text:"du"}
+      : {token:"VERB", cls:"verb", text:echFormWithRule(invCurrent.verb, invCurrent.gar)},
+    {token:"GAR", cls:"gar", text:invCurrent.gar}
+  ];
+  if(invNeedInfo) base.push({token:"INFO", cls:"info", text:invCurrent.info});
+  return base;
+}
+
+function invTopPunct(){ return invModeGiven==="AFF" ? "." : "?"; }
+function invBottomPunct(){ return invModeGiven==="AFF" ? "?" : "."; }
+
+function invRender(){
+  invCurrent = invOrder[invPos];
+  invNeedInfo = !!invCurrent.info;
+  invModeGiven = (Math.random()<0.5) ? "AFF" : "Q";
+  document.getElementById("invProg").textContent = `${invPos+1} / ${invOrder.length}`;
+  clearFb("invFb");
+  invPlaced = {};
+
+  // TOP ROW (bank) — draggable
+  const topRow = document.getElementById("invTopRow");
+  topRow.innerHTML = "";
+  const topStruct = invTopStructure();
+  topStruct.forEach((it, idx)=>{
+    const id = `inv_bank_${idx+1}`;
+    const st = makeStack({cls:it.cls, text:it.text, type:it.token, id, isBank:true}, idx+1);
+    topRow.appendChild(st);
+  });
+  topRow.appendChild(makePunctColumn(invTopPunct()));
+
+  // BOTTOM ROW (slots) — drop
+  const bottomRow = document.getElementById("invBottomRow");
+  bottomRow.innerHTML = "";
+  const targetStruct = invTargetStructure();
+  targetStruct.forEach((it, idx)=>{
+    const slotId = `inv_slot_${idx+1}`;
+    const st = makeStack({cls:it.cls, text:String(idx+1), type:it.token, id:slotId, isDrop:true}, idx+1);
+    const pill = st.querySelector(".wordPill");
+    pill.dataset.slot = String(idx+1);
+    pill.dataset.expected = it.token;
+
+    pill.addEventListener("dragover",(e)=>{ e.preventDefault(); pill.classList.add("over"); });
+    pill.addEventListener("dragleave",()=> pill.classList.remove("over"));
+    pill.addEventListener("drop",(e)=>{
+      e.preventDefault();
+      pill.classList.remove("over");
+      let data=null;
+      try{ data = JSON.parse(e.dataTransfer.getData("text/plain")); }catch(_){}
+      if(!data) return;
+      invPlace(pill, data);
+    });
+
+    bottomRow.appendChild(st);
+  });
+  bottomRow.appendChild(makePunctColumn(invBottomPunct()));
+}
+
+function invTransformForTarget(token){
+  const targetIsQuestion = (invModeGiven==="AFF");
+  if(token==="SUBJ") return targetIsQuestion ? "du" : "Ech";
+  if(token==="VERB") return targetIsQuestion ? cap1(conjBaseAll(invCurrent.verb).du) : echFormWithRule(invCurrent.verb, invCurrent.gar);
+  if(token==="GAR")  return invCurrent.gar;
+  if(token==="INFO") return invCurrent.info;
+  return "";
+}
+
+function invPlace(slotEl, data){
+  if(slotEl.classList.contains("filled")) return;
+
+  const src = document.querySelector(`#invTopRow .bankPill[data-id="${data.id}"]`);
+  if(!src || src.classList.contains("used")) return;
+
+  // keep dropped colour
+  slotEl.classList.remove("subj","verb","gar","info");
+  slotEl.classList.add(data.cls);
+
+  slotEl.classList.add("filled");
+  slotEl.textContent = data.text;
+  magic(slotEl);
+
+  setTimeout(()=>{ slotEl.textContent = invTransformForTarget(data.type); }, 170);
+
+  const slotNum = Number(slotEl.dataset.slot);
+  invPlaced[slotNum] = { token:data.type, text:slotEl.textContent };
+
+  src.classList.add("used");
+  src.draggable = false;
+
+  clearFb("invFb");
+}
+
+function invCheck(){
+  const required = invNeedInfo ? 4 : 3;
+
+  for(let i=1;i<=required;i++){
+    const el = document.querySelector(`#invBottomRow .wordPill[data-slot="${i}"]`);
+    if(!el || !el.classList.contains("filled")){
+      setFb("invFb","Fëll nach all d’Plazen aus.", false);
+      return;
+    }
   }
 
-  // slot 1
-  const ok1 = placed[1]?.type==="SUBJ" && placed[1]?.text==="Ech";
-  mark(1, ok1);
-  if(!ok1) allOk=false;
+  const expected = invTargetStructure();
+  let allOk = true;
 
-  // slot 2: must be VERB and must match the selected conjugation shown (no auto-fix!)
-  const ok2 = placed[2]?.type==="VERB" && placed[2]?.text===expectedVerb;
-  mark(2, ok2);
-  if(!ok2) allOk=false;
+  for(let i=1;i<=required;i++){
+    const slotEl = document.querySelector(`#invBottomRow .wordPill[data-slot="${i}"]`);
+    const gotToken = invPlaced[i]?.token;
+    const expectedToken = expected[i-1].token;
 
-  // slot 3
-  const ok3 = placed[3]?.type==="GAR" && placed[3]?.text===expectedGar;
-  mark(3, ok3);
-  if(!ok3) allOk=false;
-
-  // slot 4 if needed
-  if(needInfo){
-    const ok4 = placed[4]?.type==="INFO" && placed[4]?.text===expectedInfo;
-    mark(4, ok4);
-    if(!ok4) allOk=false;
+    const ok = gotToken === expectedToken;
+    flash(slotEl, ok ? "flash-green":"flash-red");
+    if(!ok) allOk = false;
   }
 
-  setFb(allOk ? "Richteg!" : "Nach net ganz. Probéier nach eng Kéier.", allOk);
+  setFb("invFb", allOk ? "Richteg!" : "Nach net ganz. Probéier nach eng Kéier.", allOk);
 }
 
-/* ===================== ROUND CONTROL ===================== */
-function loadRound(){
-  current = order[pos];
-  document.getElementById("prog").textContent = `${pos+1} / ${order.length}`;
-  clearFeedback();
+document.getElementById("invResetBtn").addEventListener("click", invRender);
+document.getElementById("invCheckBtn").addEventListener("click", invCheck);
+document.getElementById("invNextBtn").addEventListener("click", ()=>{
+  invPos = (invPos+1) % invOrder.length;
+  invRender();
+});
 
-  renderSlots();
-  renderBank();
+/* ===================== NAV BETWEEN GAMES ===================== */
+const games = [
+  {id:"game1", title:"1. Ausso bauen", tab:"tab1"},
+  {id:"game2", title:"2. Inversioun", tab:"tab2"}
+];
+let gameIndex = 0;
+
+function showGame(idx){
+  gameIndex = idx;
+  games.forEach((g,i)=>{
+    document.getElementById(g.id).classList.toggle("active", i===idx);
+    document.getElementById(g.tab).classList.toggle("active", i===idx);
+  });
+  document.getElementById("topTitle").textContent = games[idx].title;
 }
 
-function nextRound(){
-  pos++;
-  if(pos >= order.length){
-    order = shuffle(EX);
-    pos = 0;
-  }
-  loadRound();
-}
+document.getElementById("tab1").addEventListener("click", ()=>showGame(0));
+document.getElementById("tab2").addEventListener("click", ()=>showGame(1));
 
-function resetRound(){
-  loadRound();
-}
+document.getElementById("prevGame").addEventListener("click", ()=>{
+  showGame((gameIndex + games.length - 1) % games.length);
+});
+document.getElementById("nextGame").addEventListener("click", ()=>{
+  showGame((gameIndex + 1) % games.length);
+});
 
-/* ===================== BUTTONS + INIT ===================== */
-document.getElementById("checkBtn").addEventListener("click", checkAnswer);
-document.getElementById("nextBtn").addEventListener("click", nextRound);
-document.getElementById("resetBtn").addEventListener("click", resetRound);
-
-loadRound();
+/* ===================== INIT ===================== */
+g1Render();
+invRender();
+showGame(0);
 </script>
 </body>
 </html>
