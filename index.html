@@ -1,639 +1,312 @@
 <!DOCTYPE html>
 <html lang="lb">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>P4 – Sazstruktur (Inversioun)</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P4 – Ausso bauen</title>
 
-  <style>
-    @font-face{
-      font-family:'Schoulschrëft';
-      src:url('https://raw.githubusercontent.com/albrechtclaire1007/schoulschreft/main/schoulschreft_bold%5B2%5D.TTF') format('truetype');
-      font-weight:bold;
-      font-style:normal;
-      font-display:swap;
-    }
+<style>
+@font-face{
+  font-family:'Schoulschrëft';
+  src:url('https://raw.githubusercontent.com/albrechtclaire1007/schoulschreft/main/schoulschreft_bold%5B2%5D.TTF') format('truetype');
+  font-weight:bold;
+}
 
-    :root{
-      --purple-mid:#b7a2e5;
-      --purple-light:#ebe3ff;
-      --purple-dark:#6c4aa3;
-      --ink:#2d1844;
-      --white:#fff;
+:root{
+  --bg:#ebe3ff;
+  --ink:#2d1844;
+  --subj:#b7f0c8;
+  --verb:#e6dcff;
+  --gar:#ffd9c4;
+  --box:#ffffff;
+  --ok:#2f8f4e;
+  --bad:#b02323;
+}
 
-      --subj:#b7f0c8;   /* green */
-      --verb:#e6dcff;   /* purple */
-      --gar:#ffd9c4;    /* orange */
-      --info:#dbefff;   /* blue */
+*{box-sizing:border-box}
 
-      --dash: rgba(108,74,163,.35);
-    }
+body{
+  margin:0;
+  padding:18px;
+  font-family:'Schoulschrëft', system-ui, sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+}
 
-    *{ margin:0; padding:0; box-sizing:border-box; }
+h1{
+  text-align:center;
+  font-size:1.6rem;
+  margin-bottom:10px;
+}
 
-    body{
-      font-family:'Schoulschrëft', system-ui, sans-serif;
-      background:var(--purple-light);
-      padding:16px;
-      color:var(--ink);
-      min-height:100vh;
-    }
+.instruction{
+  max-width:1000px;
+  margin:0 auto 16px;
+  background:var(--box);
+  border-radius:18px;
+  padding:14px;
+  text-align:center;
+  font-size:1.2rem;
+}
 
-    button{ font-family:'Schoulschrëft', system-ui, sans-serif; cursor:pointer; }
+/* SENTENCE ROW */
+.row{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  max-width:1100px;
+  margin:0 auto;
+}
 
-    .top-bar{
-      max-width:1200px;
-      margin:0 auto 10px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:var(--purple-dark);
-      border-radius:999px;
-      padding:10px 14px;
-      color:var(--white);
-      box-shadow: 0 10px 18px rgba(45,24,68,.12);
-      text-align:center;
-      font-size:1.45rem;
-      line-height:1.1;
-    }
+.slotWrap{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
 
-    .instruction-box{
-      max-width:1200px;
-      margin:0 auto 14px;
-      background:var(--white);
-      border-radius:18px;
-      padding:12px 16px;
-      text-align:center;
-      font-size:1.35rem;
-      border:2px solid rgba(108,74,163,.15);
-    }
+.slot{
+  width:100%;
+  min-height:72px;
+  background:#fff;
+  border-radius:18px;
+  border:2px dashed rgba(0,0,0,.25);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.5rem;
+}
 
-    .row-center{
-      max-width:1200px;
-      margin: 0 auto 14px;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-    }
+.slot.filled{
+  border-style:solid;
+}
 
-    .primary{
-      padding:10px 18px;
-      border-radius:999px;
-      border:2px solid var(--purple-dark);
-      background:var(--purple-mid);
-      color:var(--white);
-      font-size:1.25rem;
-    }
-    .secondary{
-      padding:8px 14px;
-      border-radius:999px;
-      border:2px solid rgba(108,74,163,.25);
-      background:white;
-      color:var(--ink);
-      font-size:1.15rem;
-    }
-    .pill{
-      background:var(--white);
-      border-radius:999px;
-      padding:8px 14px;
-      border:2px solid rgba(108,74,163,.15);
-      font-size:1.2rem;
-    }
+.pos{
+  margin-top:4px;
+  font-size:1rem;
+  opacity:.6;
+}
 
-    .board{
-      width:min(1200px, 100%);
-      margin:0 auto;
-      background: rgba(255,255,255,.35);
-      border:2px solid rgba(108,74,163,.10);
-      border-radius:22px;
-      padding:14px;
-    }
+.dot{
+  font-size:2.2rem;
+  padding-bottom:8px;
+}
 
-    /* ONE-LINE ROWS */
-    .row{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:14px;
-      flex-wrap:nowrap;
-      overflow-x:auto;
-      padding-bottom:4px;
-      -webkit-overflow-scrolling: touch;
-    }
-    .row::-webkit-scrollbar{ height:10px; }
-    .row::-webkit-scrollbar-thumb{ background: rgba(108,74,163,.18); border-radius:999px; }
+/* BANK */
+.bank{
+  display:flex;
+  justify-content:center;
+  gap:14px;
+  flex-wrap:wrap;
+  margin:18px auto;
+  max-width:1100px;
+}
 
-    .stack{
-      flex: 1 1 0;
-      min-width: 160px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:10px;
-    }
+.pill{
+  padding:12px 22px;
+  border-radius:999px;
+  font-size:1.4rem;
+  border:2px solid rgba(0,0,0,.08);
+  cursor:grab;
+  user-select:none;
+}
 
-    .wordPill{
-      width:100%;
-      border-radius:999px;
-      padding:14px 14px;
-      font-size:1.95rem;
-      text-align:center;
-      border:2px solid rgba(0,0,0,.06);
-      user-select:none;
-      word-break:break-word;
-    }
+.subj{background:var(--subj)}
+.verb{background:var(--verb)}
+.gar{background:var(--gar)}
 
-    .numCircle{
-      width:44px;
-      height:44px;
-      border-radius:999px;
-      border:3px solid #000;
-      background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:1.4rem;
-      line-height:1;
-    }
+.controls{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-top:10px;
+}
 
-    .subj{ background: var(--subj); }
-    .verb{ background: var(--verb); }
-    .gar { background: var(--gar); }
-    .info{ background: var(--info); }
+button{
+  font-family:'Schoulschrëft';
+  font-size:1.2rem;
+  padding:10px 18px;
+  border-radius:999px;
+  border:2px solid var(--ink);
+  background:#fff;
+  cursor:pointer;
+}
 
-    .bankPill{ cursor:grab; }
-    .bankPill:active{ transform: scale(.99); }
-    .bankPill.used{ opacity:.25; filter:grayscale(.2); cursor:default; }
-    .selected{ outline: 5px solid rgba(108,74,163,.22); outline-offset: 3px; }
-
-    .drop{
-      border: 2px dashed var(--dash);
-      background: rgba(255,255,255,.75);
-    }
-    .drop.over{ outline:4px solid rgba(108,74,163,.18); outline-offset:2px; }
-    .drop.filled{ border-style:solid; } /* keep colours visible */
-
-    /* punctuation aligned with pills */
-    .punctCol{
-      width:38px;
-      flex: 0 0 38px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:10px;
-    }
-    .punctSpacer{ height:4px; }
-    .punct{
-      font-size:2.35rem;
-      color: var(--purple-dark);
-      line-height:1;
-      margin-top: 8px;
-    }
-    .punctGhost{
-      width:38px;
-      height:44px;
-      opacity:0;
-    }
-
-    .feedback{
-      margin: 10px auto 2px;
-      min-height:1.4em;
-      font-size:1.35rem;
-      text-align:center;
-    }
-    .feedback.ok{ color:#117a3a; }
-    .feedback.bad{ color:#b02323; }
-
-    .flash-green{ animation: flashGreen .25s ease; }
-    .flash-red{ animation: flashRed .25s ease; }
-    @keyframes flashGreen{
-      0%{ box-shadow:none; }
-      50%{ box-shadow: 0 0 0 6px rgba(183,240,200,.95); }
-      100%{ box-shadow:none; }
-    }
-    @keyframes flashRed{
-      0%{ box-shadow:none; }
-      50%{ box-shadow: 0 0 0 6px rgba(255,204,204,.95); }
-      100%{ box-shadow:none; }
-    }
-
-    .magic{ animation: magicPop .45s ease; }
-    @keyframes magicPop{
-      0%   { transform:scale(1); filter:brightness(1); }
-      35%  { transform:scale(1.08); filter:brightness(1.18); }
-      100% { transform:scale(1); filter:brightness(1); }
-    }
-
-    @media (max-width:520px){
-      .wordPill{ font-size:1.65rem; padding:12px 12px; }
-      .numCircle{ width:40px; height:40px; font-size:1.25rem; }
-      .punct{ font-size:2.1rem; margin-top: 6px; }
-      .stack{ min-width: 140px; }
-    }
-  </style>
+.feedback{
+  text-align:center;
+  min-height:1.5em;
+  margin-top:10px;
+  font-size:1.3rem;
+}
+.feedback.ok{color:var(--ok)}
+.feedback.bad{color:var(--bad)}
+</style>
 </head>
 
 <body>
-  <div class="top-bar">P4 – Sazstruktur mat “gär”</div>
 
-  <div class="instruction-box">
-    Lies de Saz a kuck der d'Sazdeeler un. Verwandel de Saz an eng Fro oder d'Fro an e Saz andeems du d'Sazdeeler op déi richteg Plaz zitts.
-  </div>
+<h1>Ausso bauen</h1>
 
-  <div class="row-center">
-    <button class="secondary" id="resetBtn">Reset</button>
-    <button class="secondary" id="checkBtn">Kontrolléieren</button>
-    <button class="primary" id="nextBtn">Nächst Beispill</button>
-    <div class="pill" id="prog">1 / …</div>
-  </div>
+<div class="instruction">
+Lies d’Wierder a bau eng <strong>Ausso</strong>.  
+Zéi d'Sazdeeler an déi richteg Reiefolleg.
+</div>
 
-  <div class="board">
-    <div class="row" id="topRow"></div>
-    <div style="height:14px;"></div>
-    <div class="row" id="bottomRow"></div>
-    <div class="feedback" id="fb"></div>
+<div class="row">
+  <div class="slotWrap">
+    <div class="slot" data-slot="1"></div>
+    <div class="pos">1</div>
   </div>
+  <div class="slotWrap">
+    <div class="slot" data-slot="2"></div>
+    <div class="pos">2</div>
+  </div>
+  <div class="slotWrap">
+    <div class="slot" data-slot="3"></div>
+    <div class="pos">3</div>
+  </div>
+  <div class="dot">.</div>
+</div>
+
+<div class="bank" id="bank"></div>
+
+<div class="controls">
+  <button id="check">Kontrolléieren</button>
+  <button id="next">Nächst</button>
+</div>
+
+<div class="feedback" id="fb"></div>
 
 <script>
-/* ===================== HELPERS ===================== */
-function shuffle(arr){
-  const a = arr.slice();
-  for(let i=a.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
-  return a;
-}
-function flash(el, cls){
-  el.classList.remove("flash-green","flash-red","magic");
-  void el.offsetWidth;
-  el.classList.add(cls);
-}
-function setFb(text, ok){
-  const el = document.getElementById("fb");
-  el.textContent = text;
-  el.className = "feedback " + (ok ? "ok" : "bad");
-}
-function clearFb(){
-  const el = document.getElementById("fb");
-  el.textContent = "";
-  el.className = "feedback";
-}
-function magic(el){
-  el.classList.remove("magic");
-  void el.offsetWidth;
-  el.classList.add("magic");
-}
-function cap1(s){
-  if(!s) return s;
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
+/* ================= DATA ================= */
 
-/* ===================== ORTHO: -N RULE (context sensitive) =====================
-If ech-verb ends with "en":
-- drop final -n ONLY if next word does NOT start with "n"
-So:
-  Ech lauschteren gär     -> lauschtere gär
-  Ech lauschteren net gär -> lauschteren net gär   (keep -n)
-*/
-function applyNRuleBeforeNextWord(echVerbForm, nextWord){
-  if(typeof echVerbForm !== "string") return echVerbForm;
-  const next = (nextWord || "").trim().toLowerCase();
-  const nextStartsWithN = next.startsWith("n");
-  if(echVerbForm.endsWith("en") && !nextStartsWithN){
-    return echVerbForm.slice(0, -1); // remove only final "n"
-  }
-  return echVerbForm;
-}
-
-/* ===================== CONJUGATION (ECH/DU) ===================== */
-const IRREG = {
-  "fueren":   { ech:"fueren", du:"fiers" },
-  "danzen":   { ech:"danzen", du:"danz"  },
-  "liesen":   { ech:"liesen", du:"lies"  },
-  "schwammen":{ ech:"schwammen", du:"schwëmms" },
-  "molen":    { ech:"molen", du:"mools" },
-  "lafen":    { ech:"lafen", du:"leefs" },
-  "maachen":  { ech:"maachen", du:"méchs" },
-  "spillen":  { ech:"spillen", du:"spills" }
-};
-
-function stemOf(inf){
-  if(inf.endsWith("en")) return inf.slice(0,-2);
-  return inf;
-}
-function conjEchBase(inf){
-  if(IRREG[inf]) return IRREG[inf].ech;
-  return stemOf(inf) + "en";
-}
-function conjDu(inf){
-  if(IRREG[inf]) return IRREG[inf].du;
-  return stemOf(inf) + "s";
-}
-/* ech form used in this game = before current.gar (gär/net gär), apply rule */
-function conjEchBeforeGar(inf, garWord){
-  return applyNRuleBeforeNextWord(conjEchBase(inf), garWord);
-}
-
-/* ===================== 25 EXAMPLES ===================== */
-const EX = [
-  { verb:"schwammen", gar:"gär",     info:null },
-  { verb:"spillen",   gar:"gär",     info:"Fussball" },
-  { verb:"kucken",    gar:"net gär", info:"Tëlee" },
-  { verb:"lauschteren",gar:"gär",    info:"Musek" },
-  { verb:"liesen",    gar:"gär",     info:null },
-  { verb:"danzen",    gar:"net gär", info:null },
-  { verb:"lafen",     gar:"gär",     info:null },
-  { verb:"maachen",   gar:"net gär", info:"Sport" },
-  { verb:"telefonéieren",gar:"gär",  info:null },
-  { verb:"raschten",  gar:"net gär", info:null },
-  { verb:"kachen",    gar:"gär",     info:null },
-  { verb:"spadséieren",gar:"gär",    info:null },
-  { verb:"molen",     gar:"net gär", info:null },
-  { verb:"léieren",   gar:"gär",     info:null },
-  { verb:"boxen",     gar:"net gär", info:null },
-  { verb:"fueren",    gar:"gär",     info:"Vëlo" },
-  { verb:"maachen",   gar:"gär",     info:"Hausaufgaben" },
-  { verb:"kucken",    gar:"gär",     info:"Filmer" },
-  { verb:"lauschteren",gar:"net gär",info:"Radio" },
-  { verb:"spillen",   gar:"net gär", info:"Tennis" },
-  { verb:"danzen",    gar:"gär",     info:"Hip-Hop" },
-  { verb:"lafen",     gar:"net gär", info:"laang Strecken" },
-  { verb:"liesen",    gar:"net gär", info:"Zeitungen" },
-  { verb:"telefonéieren",gar:"net gär", info:"laang" },
-  { verb:"spadséieren",gar:"net gär", info:"an der Reen" }
+const VERBS = [
+  "lauschteren","kucken","liesen","schwammen","lafen","danzen",
+  "maachen","spillen","telefonéieren","raschten","kachen","boxen",
+  "léieren","spadséieren","molen"
 ];
 
-let order = shuffle(EX);
+const EXAMPLES = [];
+while(EXAMPLES.length < 30){
+  EXAMPLES.push({
+    pron:"ech",
+    verb:VERBS[Math.floor(Math.random()*VERBS.length)],
+    gar:Math.random()<.5 ? "gär" : "net gär"
+  });
+}
+
+/* ================= CONJUGATION ================= */
+
+function stemOf(inf){
+  return inf.endsWith("en") ? inf.slice(0,-2) : inf;
+}
+
+function conjEchBase(inf){
+  return stemOf(inf)+"en";
+}
+
+/* -n rule incl. net gär */
+function applyNRule(form, nextWord){
+  if(form.endsWith("en") && !nextWord.startsWith("n")){
+    return form.slice(0,-1);
+  }
+  return form;
+}
+
+function conjEch(inf, gar){
+  return applyNRule(conjEchBase(inf), gar);
+}
+
+/* ================= GAME STATE ================= */
+
 let pos = 0;
 let current = null;
-let givenMode = "AFF";   // "AFF" or "Q"
-let needInfo = false;
+let placed = {1:null,2:null,3:null};
 
-let selectedTile = null;
-let placed = {1:null,2:null,3:null,4:null}; // {token, raw}
+const slots = document.querySelectorAll(".slot");
 
-/* ===================== STRUCTURES ===================== */
-function topStructure(){
-  // AFF: 1 Ech, 2 verb(ech before gar), 3 gar, 4 info?
-  // Q  : 1 verb(du, capitalised), 2 du, 3 gar, 4 info?
-  const base = [
-    givenMode==="AFF"
-      ? {token:"SUBJ", cls:"subj", text:"Ech"}
-      : {token:"VERB", cls:"verb", text:cap1(conjDu(current.verb))},
-    givenMode==="AFF"
-      ? {token:"VERB", cls:"verb", text:conjEchBeforeGar(current.verb, current.gar)}
-      : {token:"SUBJ", cls:"subj", text:"du"},
-    {token:"GAR", cls:"gar", text:current.gar}
-  ];
-  if(needInfo) base.push({token:"INFO", cls:"info", text:current.info});
-  return base;
-}
+/* ================= DRAG ================= */
 
-function targetStructure(){
-  const targetIsQuestion = (givenMode==="AFF");
-  const base = [
-    targetIsQuestion
-      ? {token:"VERB", cls:"verb", text:cap1(conjDu(current.verb))}
-      : {token:"SUBJ", cls:"subj", text:"Ech"},
-    targetIsQuestion
-      ? {token:"SUBJ", cls:"subj", text:"du"}
-      : {token:"VERB", cls:"verb", text:conjEchBeforeGar(current.verb, current.gar)},
-    {token:"GAR", cls:"gar", text:current.gar}
-  ];
-  if(needInfo) base.push({token:"INFO", cls:"info", text:current.info});
-  return base;
-}
+slots.forEach(s=>{
+  s.addEventListener("dragover", e=>e.preventDefault());
+  s.addEventListener("drop", e=>{
+    const data = JSON.parse(e.dataTransfer.getData("text"));
+    s.textContent = data.text;
+    s.classList.add("filled");
+    placed[s.dataset.slot] = data.type;
+    document.querySelector(`[data-id="${data.id}"]`)?.remove();
+  });
+});
 
-function topPunct(){ return givenMode==="AFF" ? "." : "?"; }
-function bottomPunct(){ return givenMode==="AFF" ? "?" : "."; }
-
-/* ===================== UI BUILD ===================== */
-function makeStack({cls,text,token}, number, {draggable=false, id=null, isDrop=false} = {}){
-  const stack = document.createElement("div");
-  stack.className = "stack";
-
-  const pill = document.createElement("div");
-  pill.className = `wordPill ${cls} ${draggable ? "bankPill" : ""} ${isDrop ? "drop" : ""}`;
-  pill.textContent = text;
-  if(id) pill.id = id;
-
-  pill.dataset.token = token;
-  pill.dataset.raw = text;
-
-  if(draggable){
-    pill.draggable = true;
-    pill.addEventListener("dragstart", (e)=>{
-      if(pill.classList.contains("used")) return e.preventDefault();
-      e.dataTransfer.setData("text/plain", JSON.stringify({token, raw:text, srcId: pill.id}));
-    });
-
-    pill.addEventListener("click", ()=>{
-      if(pill.classList.contains("used")) return;
-      if(selectedTile && selectedTile !== pill) selectedTile.classList.remove("selected");
-      selectedTile = pill;
-      pill.classList.toggle("selected");
-      if(!pill.classList.contains("selected")) selectedTile = null;
-    });
-  }
-
-  const num = document.createElement("div");
-  num.className = "numCircle";
-  num.textContent = String(number);
-
-  stack.appendChild(pill);
-  stack.appendChild(num);
-  return stack;
-}
-
-function makePunctColumn(punctChar){
-  const col = document.createElement("div");
-  col.className = "punctCol";
-
-  const spacer = document.createElement("div");
-  spacer.className = "punctSpacer";
-
+function makePill(text, cls, type, id){
   const p = document.createElement("div");
-  p.className = "punct";
-  p.textContent = punctChar;
-
-  const ghost = document.createElement("div");
-  ghost.className = "punctGhost";
-  ghost.textContent = "0";
-
-  col.appendChild(spacer);
-  col.appendChild(p);
-  col.appendChild(ghost);
-  return col;
-}
-
-function renderTop(){
-  const topRow = document.getElementById("topRow");
-  topRow.innerHTML = "";
-
-  const struct = topStructure();
-  struct.forEach((item, idx)=>{
-    const id = `bank_${idx+1}`;
-    const stack = makeStack(item, idx+1, {draggable:true, id});
-    if(idx===3 && !needInfo) stack.style.display="none";
-    topRow.appendChild(stack);
+  p.className = `pill ${cls}`;
+  p.textContent = text;
+  p.dataset.id = id;
+  p.draggable = true;
+  p.addEventListener("dragstart", e=>{
+    e.dataTransfer.setData("text", JSON.stringify({text,type,id}));
   });
-  topRow.appendChild(makePunctColumn(topPunct()));
+  return p;
 }
 
-function renderBottom(){
-  const bottomRow = document.getElementById("bottomRow");
-  bottomRow.innerHTML = "";
+/* ================= RENDER ================= */
 
-  const struct = targetStructure();
-
-  struct.forEach((item, idx)=>{
-    const slotId = `slot_${idx+1}`;
-    const stack = makeStack(
-      {cls:item.cls, text:String(idx+1), token:item.token},
-      idx+1,
-      {draggable:false, id:slotId, isDrop:true}
-    );
-
-    const pill = stack.querySelector(".wordPill");
-    pill.dataset.slot = String(idx+1);
-    pill.dataset.expected = item.token;
-
-    pill.addEventListener("dragover", (e)=>{ e.preventDefault(); pill.classList.add("over"); });
-    pill.addEventListener("dragleave", ()=> pill.classList.remove("over"));
-    pill.addEventListener("drop", (e)=>{
-      e.preventDefault();
-      pill.classList.remove("over");
-      let data=null;
-      try{ data = JSON.parse(e.dataTransfer.getData("text/plain")); }catch(_){}
-      if(!data) return;
-      placeIntoSlot(pill, data.token, data.raw, data.srcId);
-    });
-
-    pill.addEventListener("click", ()=>{
-      if(selectedTile && selectedTile.classList.contains("selected")){
-        placeIntoSlot(pill, selectedTile.dataset.token, selectedTile.dataset.raw, selectedTile.id);
-      }
-    });
-
-    if(idx===3 && !needInfo) stack.style.display="none";
-    bottomRow.appendChild(stack);
-  });
-
-  bottomRow.appendChild(makePunctColumn(bottomPunct()));
-}
-
-function resetAll(){
-  placed = {1:null,2:null,3:null,4:null};
-  clearFb();
-
-  for(let i=1;i<=4;i++){
-    const el = document.getElementById(`slot_${i}`);
-    if(!el) continue;
-    el.classList.remove("filled","flash-green","flash-red","magic","over");
-    el.textContent = String(i);
-  }
-
-  document.querySelectorAll(".bankPill").forEach(p=>{
-    p.classList.remove("used","selected");
-    p.draggable = true;
-  });
-  selectedTile = null;
-}
-
-function transformForTarget(token){
-  const targetIsQuestion = (givenMode==="AFF");
-  if(token==="SUBJ") return targetIsQuestion ? "du" : "Ech";
-  if(token==="VERB"){
-    return targetIsQuestion
-      ? cap1(conjDu(current.verb))
-      : conjEchBeforeGar(current.verb, current.gar);
-  }
-  if(token==="GAR")  return current.gar;
-  if(token==="INFO") return current.info;
-  return "";
-}
-
-function placeIntoSlot(slotEl, token, raw, srcId){
-  if(slotEl.classList.contains("filled")) return;
-
-  const src = document.getElementById(srcId);
-  if(!src || src.classList.contains("used")) return;
-
-  slotEl.classList.add("filled");
-  slotEl.textContent = raw;
-  magic(slotEl);
-
-  setTimeout(()=>{ slotEl.textContent = transformForTarget(token); }, 170);
-
-  src.classList.add("used");
-  src.classList.remove("selected");
-  src.draggable = false;
-
-  const slotNum = Number(slotEl.dataset.slot);
-  placed[slotNum] = {token, raw};
-
-  selectedTile = null;
-}
-
-function checkAnswer(){
-  clearFb();
-  const struct = targetStructure();
-  const required = needInfo ? 4 : 3;
-
-  for(let i=1;i<=required;i++){
-    if(!placed[i]){
-      setFb("Fëll nach all d’Plazen aus.", false);
-      return;
-    }
-  }
-
-  let allOk = true;
-  for(let i=1;i<=required;i++){
-    const slotEl = document.getElementById(`slot_${i}`);
-    const expectedToken = struct[i-1].token;
-    const gotToken = placed[i].token;
-
-    if(gotToken === expectedToken){
-      flash(slotEl, "flash-green");
-    }else{
-      flash(slotEl, "flash-red");
-      allOk = false;
-    }
-  }
-
-  setFb(allOk ? "Richteg!" : "Nach net ganz. Probéier nach eng Kéier.", allOk);
-}
-
-/* ===================== ROUND CONTROL ===================== */
 function loadRound(){
-  current = order[pos];
-  needInfo = !!current.info;
-  givenMode = (Math.random() < 0.5) ? "AFF" : "Q";
-  document.getElementById("prog").textContent = `${pos+1} / ${order.length}`;
+  current = EXAMPLES[pos];
+  placed = {1:null,2:null,3:null};
+  document.getElementById("fb").textContent = "";
 
-  renderTop();
-  renderBottom();
-  resetAll();
+  slots.forEach(s=>{
+    s.textContent="";
+    s.classList.remove("filled");
+  });
+
+  const bank = document.getElementById("bank");
+  bank.innerHTML="";
+
+  const verbForms = [
+    conjEch(current.verb, current.gar),
+    stemOf(current.verb)+"s",
+    stemOf(current.verb)+"t"
+  ];
+
+  let verbIndex = 0;
+  const verbPill = makePill(verbForms[0],"verb","verb","v");
+
+  verbPill.onclick = ()=>{
+    verbIndex = (verbIndex+1)%verbForms.length;
+    verbPill.textContent = verbForms[verbIndex];
+  };
+
+  bank.appendChild(makePill("ech","subj","subj","s"));
+  bank.appendChild(verbPill);
+  bank.appendChild(makePill(current.gar,"gar","gar","g"));
 }
 
-function nextRound(){
-  pos++;
-  if(pos >= order.length){
-    order = shuffle(EX);
-    pos = 0;
-  }
+/* ================= CHECK ================= */
+
+document.getElementById("check").onclick = ()=>{
+  const ok =
+    placed[1]==="subj" &&
+    placed[2]==="verb" &&
+    placed[3]==="gar";
+
+  document.getElementById("fb").textContent =
+    ok ? "Richteg!" : "Nach net ganz.";
+  document.getElementById("fb").className =
+    "feedback "+(ok?"ok":"bad");
+};
+
+document.getElementById("next").onclick = ()=>{
+  pos = (pos+1)%EXAMPLES.length;
   loadRound();
-}
-
-/* ===================== BUTTONS + INIT ===================== */
-document.getElementById("resetBtn").addEventListener("click", loadRound);
-document.getElementById("checkBtn").addEventListener("click", checkAnswer);
-document.getElementById("nextBtn").addEventListener("click", nextRound);
+};
 
 loadRound();
 </script>
+
 </body>
 </html>
+
