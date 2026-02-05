@@ -957,6 +957,1952 @@ function invTransformForTarget(token){
 
 function invClearSlot(slotIndex){
   const pill = document.querySelector(`#invBottomRow .wordPill[data-slot="${slotIndex}"]`);
-  if(!pill || !pill.classList.contains
+  if(!pill || !pill.classList.contains("filled")) return;
 
+  const srcId = invPlaced[slotIndex]?.srcId;
+  if(srcId) unuseBankPill("#invTopRow", srcId);
+
+  pill.classList.remove("filled","subj","verb","gar","info");
+  pill.classList.add("drop");
+  pill.textContent = String(slotIndex);
+  delete invPlaced[slotIndex];
+  clearFb("invFb");
+}
+
+function invRender(){
+  invCurrent = invOrder[invPos];
+  invNeedInfo = !!invCurrent.info;
+  invModeGiven = (Math.random()<0.5) ? "AFF" : "Q";
+  document.getElementById("invProg").textContent = `${invPos+1} / ${invOrder.length}`;
+  clearFb("invFb");
+  invPlaced = {};
+  clearSelection();
+
+  const topRow = document.getElementById("invTopRow");
+  topRow.innerHTML = "";
+  invTopStructure().forEach((it, idx)=>{
+    const id = `inv_bank_${idx+1}`;
+    const st = makeStack({cls:it.cls, text:it.text, type:it.token, id, isBank:true}, idx+1);
+    const pill = st.querySelector(".wordPill");
+    pill.addEventListener("click", ()=>{
+      if(pill.classList.contains("used")) return;
+      selectBankPill("inv", pill);
+    });
+    topRow.appendChild(st);
+  });
+  topRow.appendChild(makePunctColumn(invTopPunct()));
+
+  const bottomRow = document.getElementById("invBottomRow");
+  bottomRow.innerHTML = "";
+  const targetStruct = invTargetStructure();
+  targetStruct.forEach((it, idx)=>{
+    const slotId = `inv_slot_${idx+1}`;
+    const st = makeStack({cls:it.cls, text:String(idx+1), type:"SLOT", id:slotId, isDrop:true}, idx+1);
+    const pill = st.querySelector(".wordPill");
+    pill.dataset.slot = String(idx+1);
+    pill.dataset.targetToken = it.token;
+
+    pill.addEventListener("click", ()=>{
+      // remove if filled + no selection
+      if(pill.classList.contains("filled") && !selected){
+        invClearSlot(idx+1);
+        return;
+      }
+
+      if(!selected || selected.game!=="inv") return;
+      if(pill.classList.contains("filled")) return;
+
+      // place WITHOUT capitals first (moved rule), then transform adds capitals only if slot is 1 in target
+      pill.classList.remove("subj","verb","gar","info");
+      pill.classList.add(selected.cls);
+
+      let initial = selected.text;
+      // strip initial capitals when moved
+      initial = lower1(initial);
+
+      pill.textContent = initial;
+      pill.classList.add("filled");
+      magic(pill);
+
+      invPlaced[idx+1] = { token:selected.type, srcId:selected.id };
+
+      selected.el.classList.add("used");
+      clearSelection();
+      clearFb("invFb");
+
+      setTimeout(()=>{ pill.textContent = invTransformForTarget(invPlaced[idx+1].token); }, 170);
+    });
+
+    bottomRow.appendChild(st);
+  });
+  bottomRow.appendChild(makePunctColumn(invBottomPunct()));
+}
+function invCheck(){
+  const required = invNeedInfo ? 4 : 3;
+  for(let i=1;i<=required;i++){
+    const el = document.querySelector(`#invBottomRow .wordPill[data-slot="${i}"]`);
+    if(!el || !el.classList.contains("filled")){
+      setFb("invFb","Fëll nach all d’Plazen aus.", false);
+      return;
+    }
+  }
+  let allOk = true;
+  for(let i=1;i<=required;i++){
+    const slotEl = document.querySelector(`#invBottomRow .wordPill[data-slot="${i}"]`);
+    const gotToken = invPlaced[i]?.token;
+    const expectedToken = slotEl.dataset.targetToken;
+    const ok = gotToken === expectedToken;
+    flash(slotEl, ok ? "flash-green":"flash-red");
+    if(!ok) allOk = false;
+  }
+  setFb("invFb", allOk ? "Richteg!" : "Nach net ganz. Probéier nach eng Kéier.", allOk);
+}
+function invPrev(){ invPos = (invPos + invOrder.length - 1) % invOrder.length; invRender(); }
+function invNext(){ invPos = (invPos + 1) % invOrder.length; invRender(); }
+
+document.getElementById("invResetBtn").addEventListener("click", invRender);
+document.getElementById("invCheckBtn").addEventListener("click", invCheck);
+document.getElementById("invPrevEx").addEventListener("click", invPrev);
+document.getElementById("invNextEx").addEventListener("click", invNext);
+
+/* =========================================================
+   GAME 3: FREE BUILDER (all pills visible, small, no frame)
+   - click placed slot to remove (always)
+========================================================= */
+const GIRL_NAMES = new Set(["Roxanne","Zoé","Lara","Jannat","Margaux","Melina","Hanna","Nandini","Naomi"]);
+const UNITEDZOAH = new Set(["u","n","i","t","e","d","z","o","a","h"]);
+const G3_NAMES = ["Ismael","Roxanne","Zoé","Kylian","Lara","Jannat","Maxime","Margaux","Louis-Guillaume","Exaucé","Melina","David","Mathias","Hanna","Nandini","Naomi","Denzel"];
+const G3_PRONOUNS = ["ech","du","hien","hatt","mir","dir","si"];
+const G3_ARTICLES = ["d'","de","den"];
+const G3_GAR = ["gär","net gär"];
+const G3_PUNCT = [".","?"];
+
+function expectedArticleForName(name){
+  if(GIRL_NAMES.has(name)) return "d'";
+  const first = (name||"").trim().charAt(0).toLowerCase();
+  return UNITEDZOAH.has(first) ? "den" : "de";
+}
+function isValidArticleNamePair(article, name){
+  if(!name) return false;
+  return (article||"").toLowerCase() === expectedArticleForName(name);
+}
+function isPronoun(s){ return G3_PRONOUNS.includes((s||"").toLowerCase()); }
+function isArticle(s){ return ["d'","de","den","D'","De","Den"].includes((s||"").trim()); }
+function isName(s){ return G3_NAMES.includes((s||"").trim()); }
+function isGar(s){ return ["gär","net gär"].includes((s||"").trim()); }
+function isPunct(s){ return s==="." || s==="?"; }
+
+let g3Slots = Array(8).fill(null); // {type,text,cls,meta}
+let g3Selected = null; // {type,text,cls,meta,el}
+
+function g3ClearSelection(){
+  if(g3Selected?.el) g3Selected.el.classList.remove("selected");
+  g3Selected = null;
+}
+function g3Select(el, token){
+  g3ClearSelection();
+  el.classList.add("selected");
+  g3Selected = {...token, el};
+}
+
+function g3BuildSentenceArea(){
+  const area = document.getElementById("g3SentenceArea");
+  area.innerHTML = "";
+  for(let i=0;i<8;i++){
+    const chip = document.createElement("div");
+    chip.className = "slotChip" + (g3Slots[i] ? " filled" : "");
+    chip.dataset.slot = String(i);
+    chip.textContent = g3Slots[i]?.text || "•";
+
+    if(g3Slots[i]){
+      const t = g3Slots[i].type;
+      chip.style.background = (t==="VERB") ? "var(--verb)"
+                       : (t==="GAR") ? "var(--gar)"
+                       : (t==="INFO") ? "var(--info)"
+                       : (t==="PUN") ? "rgba(255,255,255,.95)"
+                       : "var(--subj)";
+    }else{
+      chip.style.background = "rgba(255,255,255,.9)";
+    }
+
+    chip.addEventListener("click", ()=>{
+      const idx = Number(chip.dataset.slot);
+
+      // ALWAYS allow remove by clicking filled slot (even if selected)
+      if(g3Slots[idx] && (!g3Selected)){
+        g3Slots[idx] = null;
+        g3RefreshCaps();
+        g3BuildSentenceArea();
+        clearFb("g3Fb");
+        return;
+      }
+      if(g3Slots[idx] && g3Selected && !g3Selected.forceReplace){
+        // if a selection exists, second click removes first (simple)
+        g3Slots[idx] = null;
+        g3RefreshCaps();
+        g3BuildSentenceArea();
+        clearFb("g3Fb");
+        return;
+      }
+
+      if(!g3Selected) return;
+
+      g3Slots[idx] = {
+        type: g3Selected.type,
+        text: g3Selected.text,
+        cls: g3Selected.cls,
+        meta: g3Selected.meta || {}
+      };
+      magic(chip);
+      g3RefreshCaps();
+      g3BuildSentenceArea();
+      clearFb("g3Fb");
+    });
+
+    area.appendChild(chip);
+  }
+}
+
+/* Verb pill cycling */
+function g3VerbOptions(inf){
+  const base = conjBaseAll(inf);
+  const opts = [
+    {key:"inf", text:inf},
+    {key:"ech", text:base.ech},
+    {key:"du",  text:base.du},
+    {key:"hienhatt", text:base.hienhatt},
+    {key:"mir", text:base.mir},
+    {key:"dir", text:base.dir},
+    {key:"si",  text:base.si}
+  ];
+  const seen = new Set();
+  return opts.filter(o=>{ if(seen.has(o.text)) return false; seen.add(o.text); return true; });
+}
+
+function g3RenderBank(){
+  const bank = document.getElementById("g3BankRow");
+  bank.innerHTML = "";
+
+  const items = [];
+
+  G3_PRONOUNS.forEach(p=> items.push({type:"SUBJ", cls:"subj", text:p, meta:{kind:"pron"}}));
+  G3_ARTICLES.forEach(a=> items.push({type:"SUBJ", cls:"subj", text:a, meta:{kind:"art"}}));
+  G3_NAMES.forEach(n=> items.push({type:"SUBJ", cls:"subj", text:n, meta:{kind:"name"}}));
+
+  VERB_POOL.forEach(v=> items.push({type:"VERB", cls:"verb", text:v, meta:{inf:v}}));
+
+  G3_GAR.forEach(g=> items.push({type:"GAR", cls:"gar", text:g, meta:{}}));
+  ALL_INFO.forEach(info=> items.push({type:"INFO", cls:"info", text:info, meta:{}}));
+  G3_PUNCT.forEach(p=> items.push({type:"PUN", cls:"pun", text:p, meta:{}}));
+
+  shuffle(items).forEach((it, idx)=>{
+    const btn = document.createElement("div");
+    btn.className = `miniPill ${it.cls}`;
+    btn.textContent = it.text;
+
+    if(it.type==="VERB"){
+      const opts = g3VerbOptions(it.text);
+      btn.dataset.verbIndex = "0";
+      btn.dataset.verbInf = it.text;
+
+      btn.addEventListener("click", ()=>{
+        // cycle
+        let i = Number(btn.dataset.verbIndex || "0");
+        i = (i + 1) % opts.length;
+        btn.dataset.verbIndex = String(i);
+        btn.textContent = opts[i].text;
+
+        if(g3Selected?.el === btn){
+          g3Selected.text = btn.textContent;
+          g3Selected.meta = {inf: it.text, picked: btn.textContent};
+        }
+      });
+    }
+
+    btn.addEventListener("click", ()=>{
+      const token = {
+        type: it.type,
+        cls: it.cls,
+        text: btn.textContent,
+        meta: (it.type==="VERB") ? {inf: it.text, picked: btn.textContent} : it.meta
+      };
+      g3Select(btn, token);
+    });
+
+    bank.appendChild(btn);
+  });
+}
+
+/* Caps auto-adjust based on punctuation choice */
+function g3RefreshCaps(){
+  const punct = (g3Slots[7]?.text || "").trim();
+  const isQuestion = punct === "?";
+  const isAff = punct === ".";
+
+  function setSlotText(i, newText){
+    if(!g3Slots[i]) return;
+    g3Slots[i].text = newText;
+  }
+
+  if(isAff){
+    if(g3Slots[0] && g3Slots[0].type==="SUBJ"){
+      const low = g3Slots[0].text.toLowerCase();
+      if(low==="d'") setSlotText(0, "D'");
+      if(low==="de") setSlotText(0, "De");
+      if(low==="den") setSlotText(0, "Den");
+      if(G3_PRONOUNS.includes(low)) setSlotText(0, cap1(low));
+    }
+    if(g3Slots[1] && g3Slots[1].type==="VERB"){
+      setSlotText(1, lower1(g3Slots[1].text));
+    }
+  }
+  if(isQuestion){
+    if(g3Slots[0] && g3Slots[0].type==="VERB"){
+      setSlotText(0, cap1(g3Slots[0].text));
+    }
+    if(g3Slots[1] && g3Slots[1].type==="SUBJ"){
+      const low = g3Slots[1].text.toLowerCase();
+      if(low==="d'" || low==="de" || low==="den") setSlotText(1, low);
+      if(G3_PRONOUNS.includes(low)) setSlotText(1, low);
+    }
+  }
+  if(!isQuestion && !isAff){
+    for(let i=0;i<7;i++){
+      if(!g3Slots[i]) continue;
+      if(g3Slots[i].type!=="SUBJ") continue;
+      const low = g3Slots[i].text.toLowerCase();
+      if(G3_PRONOUNS.includes(low)) setSlotText(i, low);
+      if(low==="d'" || low==="de" || low==="den") setSlotText(i, low);
+    }
+  }
+}
+
+function inferInfFromChosenForm(form){
+  const f = form.toLowerCase();
+  for(const inf of VERB_POOL){
+    const all = conjBaseAll(inf);
+    const forms = [inf, all.ech, all.du, all.hienhatt, all.mir, all.dir, all.si].map(x=>String(x).toLowerCase());
+    if(forms.includes(f)) return inf;
+    const variants = forms.map(x=> x.endsWith("en") ? x.slice(0,-1) : x);
+    if(variants.includes(f)) return inf;
+  }
+  return null;
+}
+
+function g3Validate(){
+  clearFb("g3Fb");
+  const punct = norm(g3Slots[7]?.text);
+  if(!isPunct(punct)){
+    setFb("g3Fb","Setz zum Schluss . oder ? (lescht Plaz).", false);
+    return;
+  }
+
+  const words = [];
+  for(let i=0;i<7;i++){
+    if(g3Slots[i]) words.push({slot:i, ...g3Slots[i], text:norm(g3Slots[i].text)});
+  }
+  if(words.length < 3){
+    setFb("g3Fb","Subjekt + Verb + gär/net gär (+ Info).", false);
+    return;
+  }
+
+  const isQuestion = punct === "?";
+  const isAff = punct === ".";
+
+  function parseSubject(startIdx){
+    const t0 = words[startIdx];
+    if(!t0) return {ok:false, len:0, errors:["Subjekt feelt."]};
+
+    const w0 = t0.text;
+
+    if(isPronoun(w0)){
+      return {ok:true, len:1, personKey: toPersonKeyFromPron(w0.toLowerCase())};
+    }
+
+    if(isArticle(w0)){
+      const t1 = words[startIdx+1];
+      if(!t1) return {ok:false, len:0, errors:["Nom feelt no Artikel."]};
+      const name = t1.text;
+      if(!isName(name)) return {ok:false, len:0, errors:["Nom ass net an der Lëscht."]};
+      const art = w0.toLowerCase();
+      if(!isValidArticleNamePair(art, name)) return {ok:false, len:0, errors:["Falschen Artikel fir dësen Numm."]};
+      return {ok:true, len:2, personKey:"hienhatt", name};
+    }
+
+    if(isName(w0)){
+      return {ok:true, len:1, personKey:"hienhatt", name:w0};
+    }
+
+    return {ok:false, len:0, errors:["Subjekt = Pronomen oder (Artikel + Numm)."]};
+  }
+
+  function expectedVerb(inf, personKey, nextWord){
+    const base = conjBaseAll(inf)[personKey];
+    return applyNRule(base, nextWord);
+  }
+
+  let subj, verbToken, garToken, infoToken=null;
+
+  if(isAff){
+    subj = parseSubject(0);
+    if(!subj.ok){ setFb("g3Fb", subj.errors[0], false); return; }
+    const vi = subj.len;
+    verbToken = words[vi];
+    if(!verbToken || verbToken.type!=="VERB"){ setFb("g3Fb","Nom Subjekt muss e Verb kommen.", false); return; }
+    garToken = words[vi+1];
+    if(!garToken || !isGar(garToken.text)){ setFb("g3Fb","Nom Verb: gär / net gär.", false); return; }
+    infoToken = words[vi+2] || null;
+  }else{
+    verbToken = words[0];
+    if(!verbToken || verbToken.type!=="VERB"){ setFb("g3Fb","Bei enger Fro: Verb als éischt.", false); return; }
+    subj = parseSubject(1);
+    if(!subj.ok){ setFb("g3Fb", subj.errors[0], false); return; }
+    const gi = 1 + subj.len;
+    garToken = words[gi];
+    if(!garToken || !isGar(garToken.text)){ setFb("g3Fb","Nom Subjekt: gär / net gär.", false); return; }
+    infoToken = words[gi+1] || null;
+  }
+
+  const gotVerb = norm(verbToken.text);
+  const inf = verbToken.meta?.inf || inferInfFromChosenForm(gotVerb);
+  if(!inf){ setFb("g3Fb","Verb net erkannt.", false); return; }
+
+  const needs = !!INFO_MAP[inf];
+  if(needs && (!infoToken || infoToken.type!=="INFO")){
+    setFb("g3Fb","Dëse Verb brauch eng Informatioun.", false); return;
+  }
+  if(!needs && infoToken && infoToken.type==="INFO"){
+    setFb("g3Fb","Dëse Verb brauch keng Informatioun.", false); return;
+  }
+  if(needs && infoToken && !INFO_MAP[inf].includes(infoToken.text)){
+    setFb("g3Fb","Dës Informatioun passt net bei dëse Verb.", false); return;
+  }
+
+  const personKey = subj.personKey;
+  const nextWord = isAff ? garToken.text : (words[1]?.text || "");
+  const exp = expectedVerb(inf, personKey, nextWord);
+
+  if(gotVerb.toLowerCase() !== exp.toLowerCase()){
+    setFb("g3Fb","Verbform ass net richteg (och d’-n Regel).", false); return;
+  }
+
+  // cap rules
+  if(isQuestion && gotVerb.charAt(0) !== gotVerb.charAt(0).toUpperCase()){
+    setFb("g3Fb","Bei enger Fro: Verb grouss ufänken.", false); return;
+  }
+  if(isAff && gotVerb.charAt(0) !== gotVerb.charAt(0).toLowerCase()){
+    setFb("g3Fb","Am Saz: Verb kleng ufänken.", false); return;
+  }
+
+  setFb("g3Fb","Richteg! ✅", true);
+}
+
+function g3Reset(){
+  g3Slots = Array(8).fill(null);
+  g3ClearSelection();
+  clearFb("g3Fb");
+  g3BuildSentenceArea();
+}
+
+document.getElementById("g3Reset").addEventListener("click", g3Reset);
+document.getElementById("g3Check").addEventListener("click", g3Validate);
+
+function g3Init(){
+  g3Reset();
+  g3RenderBank();
+}
+
+/* =========================================================
+   NAV BETWEEN GAMES
+========================================================= */
+const games = [
+  {id:"game1", title:"1. Ausso bauen", tab:"tab1"},
+  {id:"game2", title:"2. Inversioun", tab:"tab2"},
+  {id:"game3", title:"3. Ech bauen selwer", tab:"tab3"}
+];
+let gameIndex = 0;
+
+function showGame(idx){
+  gameIndex = idx;
+  games.forEach((g,i)=>{
+    document.getElementById(g.id).classList.toggle("active", i===idx);
+    document.getElementById(g.tab).classList.toggle("active", i===idx);
+  });
+  document.getElementById("topTitle").textContent = games[idx].title;
+  clearSelection();
+  g3ClearSelection();
+}
+
+document.getElementById("tab1").addEventListener("click", ()=>showGame(0));
+document.getElementById("tab2").addEventListener("click", ()=>showGame(1));
+document.getElementById("tab3").addEventListener("click", ()=>showGame(2));
+
+document.getElementById("prevGame").addEventListener("click", ()=>{
+  showGame((gameIndex + games.length - 1) % games.length);
+});
+document.getElementById("nextGame").addEventListener("click", ()=>{
+  showGame((gameIndex + 1) % games.length);
+});
+
+/* ===================== INIT ===================== */
+g1Render();
+invRender();
+g3Init();
+showGame(0);
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="lb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>P4 – Sazstruktur – 3 Spiller</title>
+
+  <style>
+    @font-face{
+      font-family:'Schoulschrëft';
+      src:url('https://raw.githubusercontent.com/albrechtclaire1007/schoulschreft/main/schoulschreft_bold%5B2%5D.TTF') format('truetype');
+      font-weight:bold; font-style:normal; font-display:swap;
+    }
+
+    :root{
+      --bg1:#E9DDF7;
+      --bg2:#C9B3EE;
+      --bar:#B8A3E8;
+      --barBorder:#8E73D6;
+
+      --ink:#1f1f1f;
+      --white:#fff;
+      --border:3px;
+      --shadow:0 10px 24px rgba(0,0,0,.08);
+      --pad:clamp(10px,2.2vw,16px);
+      --r:18px;
+
+      --iconArrow:"https://i.postimg.cc/k6VtHrh0/p4arrow.png";
+      --iconReset:"https://i.postimg.cc/KjLsxCrc/p4replay.png";
+      --iconCheck:"https://i.postimg.cc/QtN6K0L0/buttons-2.png";
+
+      --subj:#b7f0c8;
+      --verb:#e6dcff;
+      --gar:#ffd9c4;
+      --info:#dbefff;
+
+      --dash: rgba(142,115,214,.35);
+    }
+
+    *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none;}
+    html,body{
+      height:100%; margin:0;
+      background:linear-gradient(135deg,var(--bg2),var(--bg1));
+      color:var(--ink);
+      font-family:'Schoulschrëft', Arial, sans-serif;
+      user-select:none;
+    }
+
+    /* ===== top bar ===== */
+    .topBar{
+      position:sticky; top:10px; z-index:10;
+      width:min(1200px,96vw);
+      margin:10px auto 0;
+      background:var(--bar);
+      border:var(--border) solid var(--barBorder);
+      border-radius:999px;
+      box-shadow:var(--shadow);
+      padding:10px 12px;
+      display:grid;
+      grid-template-columns: 70px 1fr 70px;
+      align-items:center;
+      gap:10px;
+    }
+    .barBtn{
+      border:none; background:transparent;
+      cursor:pointer;
+      display:grid; place-items:center;
+      width:54px; height:54px;
+    }
+    .barBtn:active{transform:scale(.98);}
+    .barBtn img{width:46px; height:46px; object-fit:contain;}
+    .barBtn.back img{transform:rotate(180deg);}
+    .barTitle{
+      text-align:center;
+      color:#fff;
+      font-size:clamp(1.5rem,3.2vw,2.4rem);
+      margin:0;
+      line-height:1.1;
+      padding:0 6px;
+    }
+
+    .wrap{
+      width:min(1200px,96vw);
+      margin:14px auto 26px;
+      padding:var(--pad);
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .tabs{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top:4px;
+    }
+    .tab{
+      padding:10px 16px;
+      border-radius:999px;
+      border:var(--border) solid rgba(142,115,214,.35);
+      background:#fff;
+      color:var(--ink);
+      font-size:1.25rem;
+      cursor:pointer;
+    }
+    .tab.active{
+      background:rgba(184,163,232,.95);
+      border-color:var(--barBorder);
+      color:#fff;
+    }
+
+    .card{
+      background:rgba(255,255,255,.82);
+      border:var(--border) solid rgba(255,255,255,.65);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
+      padding:clamp(12px,2.2vw,18px);
+    }
+    .card.plain{
+      background:transparent;
+      border:none;
+      box-shadow:none;
+      padding:0;
+    }
+
+    .instruction{
+      text-align:center;
+      font-size:clamp(1.2rem,2.2vw,1.6rem);
+      line-height:1.2;
+    }
+
+    .board{
+      margin-top:12px;
+      background: rgba(255,255,255,.50);
+      border:var(--border) solid rgba(255,255,255,.55);
+      border-radius:22px;
+      padding:14px;
+    }
+    .board.noFrame{
+      background:transparent;
+      border:none;
+      border-radius:0;
+      padding:0;
+      margin-top:8px;
+    }
+
+    .row{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:14px;
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      padding-bottom:4px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .row::-webkit-scrollbar{ height:10px; }
+    .row::-webkit-scrollbar-thumb{ background: rgba(142,115,214,.20); border-radius:999px; }
+
+    .stack{
+      flex: 1 1 0;
+      min-width: 160px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+    }
+
+    .wordPill{
+      width:100%;
+      border-radius:999px;
+      padding:14px 14px;
+      font-size:1.95rem;
+      text-align:center;
+      border:2px solid rgba(0,0,0,.06);
+      word-break:break-word;
+    }
+    .numCircle{
+      width:44px;
+      height:44px;
+      border-radius:999px;
+      border:3px solid #000;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.4rem;
+      line-height:1;
+    }
+
+    .subj{ background: var(--subj); }
+    .verb{ background: var(--verb); }
+    .gar { background: var(--gar); }
+    .info{ background: var(--info); }
+    .pun  { background: rgba(255,255,255,.95); }
+
+    /* click & place */
+    .bankPill{ cursor:pointer; }
+    .bankPill:active{ transform: scale(.99); }
+    .bankPill.used{ opacity:.25; filter:grayscale(.2); cursor:default; } /* used only in games 1/2 */
+    .bankPill.selected{
+      outline:6px solid rgba(142,115,214,.35);
+      outline-offset:2px;
+      transform: scale(1.01);
+    }
+
+    .drop{
+      border: 2px dashed var(--dash);
+      background: rgba(255,255,255,.85);
+      cursor:pointer;
+    }
+    .drop.filled{ border-style:solid; }
+
+    .punctCol{
+      width:38px;
+      flex: 0 0 38px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+    }
+    .punctSpacer{ height:4px; }
+    .punct{
+      font-size:2.35rem;
+      color: var(--barBorder);
+      line-height:1;
+      margin-top: 8px;
+    }
+    .punctGhost{ width:38px; height:44px; opacity:0; }
+
+    .feedback{
+      margin: 10px auto 0;
+      min-height:1.4em;
+      font-size:1.35rem;
+      text-align:center;
+    }
+    .feedback.ok{ color:#117a3a; }
+    .feedback.bad{ color:#b02323; }
+
+    .flash-green{ animation: flashGreen .25s ease; }
+    .flash-red{ animation: flashRed .25s ease; }
+    @keyframes flashGreen{
+      0%{ box-shadow:none; }
+      50%{ box-shadow: 0 0 0 6px rgba(183,240,200,.95); }
+      100%{ box-shadow:none; }
+    }
+    @keyframes flashRed{
+      0%{ box-shadow:none; }
+      50%{ box-shadow: 0 0 0 6px rgba(255,204,204,.95); }
+      100%{ box-shadow:none; }
+    }
+    .magic{ animation: magicPop .45s ease; }
+    @keyframes magicPop{
+      0%   { transform:scale(1); filter:brightness(1); }
+      35%  { transform:scale(1.08); filter:brightness(1.18); }
+      100% { transform:scale(1); filter:brightness(1); }
+    }
+
+    .game{ display:none; }
+    .game.active{ display:block; }
+
+    /* controls below */
+    .controls{
+      margin-top:14px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .iconBtn{
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      width:78px;
+      height:58px;
+      display:grid;
+      place-items:center;
+    }
+    .iconBtn:active{transform:scale(.98);}
+    .iconBtn img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.08));
+    }
+
+    .navEx{
+      width:62px;
+      height:62px;
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+    }
+    .navEx img{ width:52px; height:52px; object-fit:contain; }
+    .navEx.back img{ transform:rotate(180deg); }
+    .navEx:active{ transform:scale(.98); }
+
+    .btn{
+      font-family:'Schoulschrëft', Arial, sans-serif;
+      cursor:pointer;
+      border-radius:999px;
+      font-size:1.35rem;
+      padding:14px 22px;
+      border:var(--border) solid rgba(0,0,0,.15);
+      background:#fff;
+    }
+    .btn.primary{
+      background:rgba(184,163,232,.95);
+      color:#fff;
+      border-color:var(--barBorder);
+    }
+    .pill{
+      border-radius:999px;
+      padding:12px 18px;
+      border:var(--border) solid rgba(0,0,0,.12);
+      background:#fff;
+      font-size:1.35rem;
+      min-width:110px;
+      text-align:center;
+    }
+
+    /* Game 3: sentence area */
+    .sentenceArea{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:center;
+      align-items:center;
+      padding:10px;
+      border:var(--border) solid rgba(142,115,214,.18);
+      border-radius:18px;
+      background:rgba(255,255,255,.55);
+    }
+    .slotChip{
+      min-width:95px;
+      padding:10px 12px;
+      border-radius:999px;
+      font-size:1.5rem;
+      text-align:center;
+      border:2px dashed var(--dash);
+      background:rgba(255,255,255,.9);
+      cursor:pointer;
+    }
+    .slotChip.filled{ border-style:solid; }
+
+    /* Game 3: mega bank (all pills visible) */
+    .megaBank{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      justify-content:center;
+    }
+    .miniPill{
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:1.25rem;
+      border:2px solid rgba(0,0,0,.08);
+      cursor:pointer;
+      line-height:1;
+      white-space:nowrap;
+    }
+    .miniPill:active{ transform:scale(.99); }
+    .miniPill.selected{
+      outline:6px solid rgba(142,115,214,.28);
+      outline-offset:2px;
+    }
+    .miniPill.subj{ background:var(--subj); }
+    .miniPill.verb{ background:var(--verb); }
+    .miniPill.gar { background:var(--gar); }
+    .miniPill.info{ background:var(--info); }
+    .miniPill.pun { background:rgba(255,255,255,.95); }
+
+    @media (max-width:520px){
+      .wordPill{ font-size:1.65rem; padding:12px 12px; }
+      .numCircle{ width:40px; height:40px; font-size:1.25rem; }
+      .punct{ font-size:2.1rem; margin-top: 6px; }
+      .stack{ min-width: 140px; }
+      .btn{ font-size:1.25rem; padding:12px 18px; }
+      .pill{ font-size:1.25rem; padding:10px 14px; }
+      .iconBtn{ width:70px; height:54px; }
+      .navEx{ width:58px; height:58px; }
+      .navEx img{ width:48px; height:48px; }
+      .slotChip{ font-size:1.25rem; min-width:86px; padding:9px 10px; }
+      .miniPill{ font-size:1.1rem; padding:7px 10px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topBar">
+    <button class="barBtn back" id="prevGame" aria-label="Viregt Spill">
+      <img src="https://i.postimg.cc/k6VtHrh0/p4arrow.png" alt="">
+    </button>
+    <h1 class="barTitle" id="topTitle">1. Ausso bauen</h1>
+    <button class="barBtn" id="nextGame" aria-label="Nächst Spill">
+      <img src="https://i.postimg.cc/k6VtHrh0/p4arrow.png" alt="">
+    </button>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab active" id="tab1">1. Ausso bauen</button>
+      <button class="tab" id="tab2">2. Inversioun</button>
+      <button class="tab" id="tab3">3. Ech bauen selwer</button>
+    </div>
+
+    <!-- ===================== GAME 1 ===================== -->
+    <section class="game active" id="game1">
+      <div class="card">
+        <div class="instruction">
+          Lies d’Wierder a bau eng <strong>Ausso</strong>. Klick op e Wuert, dono op eng Box.
+        </div>
+
+        <div class="board">
+          <div class="row" id="g1SlotsRow"></div>
+          <div style="height:14px;"></div>
+          <div class="row" id="g1BankRow"></div>
+          <div class="feedback" id="g1Fb"></div>
+        </div>
+
+        <div class="controls">
+          <button class="navEx back" id="g1PrevEx" aria-label="Virdrun Beispill">
+            <img src="https://i.postimg.cc/k6VtHrh0/p4arrow.png" alt="">
+          </button>
+
+          <button class="iconBtn" id="g1Reset" aria-label="Reset">
+            <img src="https://i.postimg.cc/KjLsxCrc/p4replay.png" alt="">
+          </button>
+
+          <button class="iconBtn" id="g1Check" aria-label="Kontrolléieren">
+            <img src="https://i.postimg.cc/QtN6K0L0/buttons-2.png" alt="">
+          </button>
+
+          <button class="navEx" id="g1NextEx" aria-label="Nächst Beispill">
+            <img src="https://i.postimg.cc/k6VtHrh0/p4arrow.png" alt="">
+          </button>
+
+          <div class="pill" id="g1Prog">1 / 30</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== GAME 2 ===================== -->
+    <section class="game" id="game2">
+      <div class="card">
+        <div class="instruction">
+          Verwandel de Saz an eng Fro oder d'Fro an e Saz. (Nëmmen <strong>gär</strong>.)
+        </div>
+
+        <div class="board">
+          <div class="row" id="invTopRow"></div>
+          <div style="height:14px;"></div>
+          <div class="row" id="invBottomRow"></div>
+          <div class="feedback" id="invFb"></div>
+        </div>
+
+        <div class="controls">
+          <button class="navEx back" id="invPrevEx" aria-label="Virdrun Beispill">
+            <img src="https://i.postimg.cc/k6VtHrh0/p4arrow.png" alt="">
+          </button>
+
+          <button class="iconBtn" id="invResetBtn" aria-label="Reset">
+            <img src="https://i.postimg.cc/KjLsxCrc/p4replay.png" alt="">
+          </button>
+
+          <button class="iconBtn" id="invCheckBtn" aria-label="Kontrolléieren">
+            <img src="https://i.postimg.cc/QtN6K0L0/buttons-2.png" alt="">
+          </button>
+
+          <button class="navEx" id="invNextEx" aria-label="Nächst Beispill">
+            <img src="https://i.postimg.cc/k6VtHrh0/p4arrow.png" alt="">
+          </button>
+
+          <div class="pill" id="invProg">1 / 25</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== GAME 3 ===================== -->
+    <section class="game" id="game3">
+      <div class="card plain">
+        <div class="sentenceArea" id="g3SentenceArea"></div>
+
+        <div class="board noFrame">
+          <div class="megaBank" id="g3BankRow"></div>
+          <div class="feedback" id="g3Fb"></div>
+        </div>
+
+        <div class="controls">
+          <button class="iconBtn" id="g3Reset" aria-label="Reset">
+            <img src="https://i.postimg.cc/KjLsxCrc/p4replay.png" alt="">
+          </button>
+          <button class="iconBtn" id="g3Check" aria-label="Kontrolléieren">
+            <img src="https://i.postimg.cc/QtN6K0L0/buttons-2.png" alt="">
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+<script>
+/* ===================== HELPERS ===================== */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function flash(el, cls){
+  el.classList.remove("flash-green","flash-red","magic");
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+function setFb(elId, text, ok){
+  const el = document.getElementById(elId);
+  el.textContent = text;
+  el.className = "feedback " + (ok ? "ok" : "bad");
+}
+function clearFb(elId){
+  const el = document.getElementById(elId);
+  el.textContent = "";
+  el.className = "feedback";
+}
+function magic(el){
+  el.classList.remove("magic");
+  void el.offsetWidth;
+  el.classList.add("magic");
+}
+function cap1(s){ return s ? (s.charAt(0).toUpperCase()+s.slice(1)) : s; }
+function lower1(s){ return s ? (s.charAt(0).toLowerCase()+s.slice(1)) : s; }
+function norm(s){ return (s||"").trim(); }
+
+/* ===================== VERB CONJUGATION ===================== */
+const IRREG = {
+  fueren:    { ech:"fueren", du:"fiers",       hienhatt:"fiert",    mir:"fueren", dir:"fuert",  si:"fueren" },
+  danzen:    { ech:"danzen", du:"danz",        hienhatt:"danzt",    mir:"danzen", dir:"danzt",  si:"danzen" },
+  liesen:    { ech:"liesen", du:"lies",        hienhatt:"liest",    mir:"liesen", dir:"liest",  si:"liesen" },
+  schwammen: { ech:"schwammen", du:"schwëmms", hienhatt:"schwëmmt", mir:"schwammen", dir:"schwammt", si:"schwammen" },
+  molen:     { ech:"molen", du:"mools",        hienhatt:"moolt",    mir:"molen",  dir:"moolt",  si:"molen" },
+  lafen:     { ech:"lafen", du:"leefs",        hienhatt:"leeft",    mir:"lafen",  dir:"laaft",  si:"lafen" },
+  maachen:   { ech:"maachen", du:"méchs",      hienhatt:"mécht",    mir:"maachen",dir:"maacht", si:"maachen" },
+  spillen:   { ech:"spillen", du:"spills",     hienhatt:"spillt",   mir:"spillen",dir:"spillt", si:"spillen" }
+};
+const VERB_POOL = [
+  "fueren","danzen","liesen","schwammen","molen","lafen","maachen","spillen",
+  "lauschteren","kucken","boxen","kachen","léieren","raschten","spadséieren","telefonéieren"
+];
+function stemOf(inf){ return inf.endsWith("en") ? inf.slice(0,-2) : inf; }
+function conjBaseAll(inf){
+  if(IRREG[inf]) return IRREG[inf];
+  const st = stemOf(inf);
+  return { ech:st+"en", du:st+"s", hienhatt:st+"t", mir:st+"en", dir:st+"t", si:st+"en" };
+}
+
+/* ===================== -N RULE ===================== */
+function applyNRule(form, nextWord){
+  const f = norm(form);
+  const next = norm(nextWord).toLowerCase();
+  const nextStartsWithN = next.startsWith("n");
+  if(f.endsWith("en") && !nextStartsWithN) return f.slice(0,-1);
+  return f;
+}
+
+/* ===================== VOCAB (pages 57/58) ===================== */
+const INFO_MAP = {
+  spillen: ["Basket","Fussball","Gittar","Videospiller"],
+  fueren: ["Skateboard","Vëlo"],
+  lauschteren: ["Musek"],
+  kucken: ["Tëlee"],
+  maachen: ["Sport","Musek","Yoga"]
+};
+const ALL_INFO = Array.from(new Set(Object.values(INFO_MAP).flat()));
+
+/* ===================== UI BUILDERS (games 1/2) ===================== */
+function makeStack({cls,text,type,id,isBank=false,isDrop=false}, number, extraUnderText=null){
+  const stack = document.createElement("div");
+  stack.className = "stack";
+
+  const pill = document.createElement("div");
+  pill.className = `wordPill ${cls} ${isBank ? "bankPill" : ""} ${isDrop ? "drop" : ""}`;
+  pill.textContent = text;
+  pill.dataset.type = type;
+  pill.dataset.id = id;
+  pill.dataset.cls = cls;
+
+  const num = document.createElement("div");
+  num.className = "numCircle";
+  num.textContent = String(number);
+
+  stack.appendChild(pill);
+  stack.appendChild(num);
+
+  if(extraUnderText){
+    const hint = document.createElement("div");
+    hint.style.fontSize = "1rem";
+    hint.style.opacity = ".6";
+    hint.style.marginTop = "-6px";
+    hint.style.textAlign = "center";
+    hint.textContent = extraUnderText;
+    stack.appendChild(hint);
+  }
+  return stack;
+}
+function makePunctColumn(punctChar){
+  const col = document.createElement("div");
+  col.className = "punctCol";
+  const spacer = document.createElement("div");
+  spacer.className = "punctSpacer";
+  const p = document.createElement("div");
+  p.className = "punct";
+  p.textContent = punctChar;
+  const ghost = document.createElement("div");
+  ghost.className = "punctGhost";
+  ghost.textContent = "0";
+  col.appendChild(spacer);
+  col.appendChild(p);
+  col.appendChild(ghost);
+  return col;
+}
+
+/* ===================== CLICK & PLACE (shared) ===================== */
+let selected = null; // {game,id,type,cls,text,formKey,el}
+function clearSelection(){
+  if(selected?.el) selected.el.classList.remove("selected");
+  selected = null;
+}
+function selectBankPill(game, pillEl){
+  if(pillEl.classList.contains("used")) return;
+  clearSelection();
+  pillEl.classList.add("selected");
+  selected = {
+    game,
+    id: pillEl.dataset.id,
+    type: pillEl.dataset.type,
+    cls: pillEl.dataset.cls,
+    text: pillEl.textContent,
+    formKey: pillEl.dataset.formKey || "",
+    el: pillEl
+  };
+}
+function unuseBankPill(containerSel, bankId){
+  const el = document.querySelector(`${containerSel} .bankPill[data-id="${bankId}"]`);
+  if(!el) return;
+  el.classList.remove("used");
+  el.draggable = false;
+}
+
+/* =========================================================
+   GAME 1
+========================================================= */
+const PRONOUNS_G1 = ["ech","du","hien","hatt","mir","dir","si"];
+function toPersonKeyFromPron(pron){
+  if(pron==="ech") return "ech";
+  if(pron==="du") return "du";
+  if(pron==="mir") return "mir";
+  if(pron==="dir") return "dir";
+  if(pron==="si") return "si";
+  return "hienhatt";
+}
+function formWithNRuleForPron(inf, pron, nextWord){
+  const pk = toPersonKeyFromPron(pron);
+  const base = conjBaseAll(inf)[pk];
+  return applyNRule(base, nextWord);
+}
+function makeExamplesG1(n=30){
+  const out=[];
+  while(out.length<n){
+    const verb = VERB_POOL[Math.floor(Math.random()*VERB_POOL.length)];
+    const gar = (Math.random()<0.5) ? "gär" : "net gär";
+    const pron = PRONOUNS_G1[Math.floor(Math.random()*PRONOUNS_G1.length)];
+    let info = null;
+    if(INFO_MAP[verb] && Math.random()<0.75){
+      const arr=INFO_MAP[verb];
+      info = arr[Math.floor(Math.random()*arr.length)];
+    }
+    out.push({pron, verb, gar, info});
+  }
+  return out;
+}
+let g1Order = shuffle(makeExamplesG1(30));
+let g1Pos = 0;
+let g1Current = null;
+let g1Placed = {}; // slot -> {type,text,srcId}
+
+function g1CorrectVerbText(){ return formWithNRuleForPron(g1Current.verb, g1Current.pron, g1Current.gar); }
+
+function g1ClearSlot(slotIndex){
+  const pill = document.querySelector(`#g1SlotsRow .wordPill[data-slot="${slotIndex}"]`);
+  if(!pill || !pill.classList.contains("filled")) return;
+
+  const srcId = g1Placed[slotIndex]?.srcId;
+  if(srcId) unuseBankPill("#g1BankRow", srcId);
+
+  pill.classList.remove("filled","subj","verb","gar","info");
+  pill.classList.add("drop");
+  pill.textContent = String(slotIndex);
+  delete g1Placed[slotIndex];
+  clearFb("g1Fb");
+}
+
+function g1Render(){
+  g1Current = g1Order[g1Pos];
+  document.getElementById("g1Prog").textContent = `${g1Pos+1} / ${g1Order.length}`;
+  clearFb("g1Fb");
+  g1Placed = {};
+  clearSelection();
+
+  const needInfo = !!g1Current.info;
+  const slotCount = needInfo ? 4 : 3;
+
+  const slotsRow = document.getElementById("g1SlotsRow");
+  slotsRow.innerHTML = "";
+  for(let i=1;i<=slotCount;i++){
+    const expectedType = (i===1)?"SUBJ":(i===2)?"VERB":(i===3)?"GAR":"INFO";
+    const cls = expectedType==="SUBJ"?"subj":expectedType==="VERB"?"verb":expectedType==="GAR"?"gar":"info";
+    const stack = makeStack({cls, text:String(i), type:expectedType, id:`g1_slot_${i}`, isDrop:true}, i);
+    const pill = stack.querySelector(".wordPill");
+    pill.dataset.slot = String(i);
+
+    pill.addEventListener("click", ()=>{
+      // remove if filled + no selection
+      if(pill.classList.contains("filled") && !selected){
+        g1ClearSlot(i);
+        return;
+      }
+      if(!selected || selected.game!=="g1") return;
+      if(pill.classList.contains("filled")) return;
+
+      pill.classList.remove("subj","verb","gar","info");
+      pill.classList.add(selected.cls);
+
+      let shown = selected.text; // bank stays lowercase
+      // CAPITAL ONLY WHEN IT GETS PLACED INTO FIRST SLOT
+      if(i===1 && selected.type==="SUBJ") shown = cap1(shown);
+
+      pill.textContent = shown;
+      pill.classList.add("filled");
+      magic(pill);
+
+      g1Placed[i] = { type:selected.type, text:shown, srcId:selected.id };
+
+      selected.el.classList.add("used");
+      clearSelection();
+      clearFb("g1Fb");
+    });
+
+    slotsRow.appendChild(stack);
+  }
+  slotsRow.appendChild(makePunctColumn("."));
+
+  const bankRow = document.getElementById("g1BankRow");
+  bankRow.innerHTML = "";
+
+  const baseAll = conjBaseAll(g1Current.verb);
+  const correctVerb = g1CorrectVerbText();
+
+  const verbOptionsAfter = [
+    {key:"correct", text: correctVerb},
+    {key:"du", text: applyNRule(baseAll.du, g1Current.gar)},
+    {key:"hienhatt", text: applyNRule(baseAll.hienhatt, g1Current.gar)},
+    {key:"mir", text: applyNRule(baseAll.mir, g1Current.gar)},
+    {key:"dir", text: applyNRule(baseAll.dir, g1Current.gar)},
+    {key:"si", text: applyNRule(baseAll.si, g1Current.gar)}
+  ];
+  const seen = new Set();
+  const afterOpts = verbOptionsAfter.filter(o=>{ if(seen.has(o.text)) return false; seen.add(o.text); return true; });
+
+  const items = [];
+  items.push({cls:"subj", type:"SUBJ", id:"g1_bank_subj", text:g1Current.pron}); // lowercase in bank
+  items.push({cls:"verb", type:"VERB", id:"g1_bank_verb", text:g1Current.verb, verbOptsAfter: afterOpts});
+  items.push({cls:"gar",  type:"GAR",  id:"g1_bank_gar",  text:g1Current.gar});
+  if(needInfo) items.push({cls:"info", type:"INFO", id:"g1_bank_info", text:g1Current.info});
+
+  shuffle(items).forEach((it, idx)=>{
+    const stack = makeStack({cls:it.cls, text:it.text, type:it.type, id:it.id, isBank:true}, idx+1,
+      (it.type==="VERB") ? "klick fir d’Formen" : null
+    );
+    const pill = stack.querySelector(".wordPill");
+
+    pill.addEventListener("click", ()=>{
+      if(pill.classList.contains("used")) return;
+      selectBankPill("g1", pill);
+    });
+
+    if(it.type==="VERB"){
+      pill.dataset.optIndex = "-1";
+      pill.dataset.formKey = "inf";
+      pill.addEventListener("click", ()=>{
+        if(pill.classList.contains("used")) return;
+        let i = Number(pill.dataset.optIndex || "-1");
+        i = i + 1;
+        if(i >= it.verbOptsAfter.length) i = -1;
+        pill.dataset.optIndex = String(i);
+        if(i === -1){
+          pill.textContent = g1Current.verb; // infinitive
+          pill.dataset.formKey = "inf";
+        }else{
+          pill.textContent = it.verbOptsAfter[i].text;
+          pill.dataset.formKey = it.verbOptsAfter[i].key;
+        }
+        if(selected?.el === pill){
+          selected.text = pill.textContent;
+          selected.formKey = pill.dataset.formKey || "";
+        }
+      });
+    }
+
+    bankRow.appendChild(stack);
+  });
+}
+
+function g1Check(){
+  const needInfo = !!g1Current.info;
+  const required = needInfo ? 4 : 3;
+  for(let i=1;i<=required;i++){
+    const el = document.querySelector(`#g1SlotsRow .wordPill[data-slot="${i}"]`);
+    if(!el || !el.classList.contains("filled")){
+      setFb("g1Fb","Fëll nach all d’Plazen aus.", false);
+      return;
+    }
+  }
+
+  const expectedVerb = g1CorrectVerbText();
+  const s1 = document.querySelector(`#g1SlotsRow .wordPill[data-slot="1"]`);
+  const s2 = document.querySelector(`#g1SlotsRow .wordPill[data-slot="2"]`);
+  const s3 = document.querySelector(`#g1SlotsRow .wordPill[data-slot="3"]`);
+  const s4 = document.querySelector(`#g1SlotsRow .wordPill[data-slot="4"]`);
+
+  const ok1 = g1Placed[1]?.type==="SUBJ" && g1Placed[1]?.text===cap1(g1Current.pron);
+  const ok2 = g1Placed[2]?.type==="VERB" && g1Placed[2]?.text===expectedVerb;
+  const ok3 = g1Placed[3]?.type==="GAR"  && g1Placed[3]?.text===g1Current.gar;
+  const ok4 = !needInfo || (g1Placed[4]?.type==="INFO" && g1Placed[4]?.text===g1Current.info);
+
+  flash(s1, ok1 ? "flash-green":"flash-red");
+  flash(s2, ok2 ? "flash-green":"flash-red");
+  flash(s3, ok3 ? "flash-green":"flash-red");
+  if(needInfo) flash(s4, ok4 ? "flash-green":"flash-red");
+
+  const allOk = ok1 && ok2 && ok3 && ok4;
+  setFb("g1Fb", allOk ? "Richteg!" : "Nach net ganz. Probéier nach eng Kéier.", allOk);
+}
+
+function g1Prev(){ g1Pos = (g1Pos + g1Order.length - 1) % g1Order.length; g1Render(); }
+function g1Next(){ g1Pos = (g1Pos + 1) % g1Order.length; g1Render(); }
+
+document.getElementById("g1Reset").addEventListener("click", g1Render);
+document.getElementById("g1Check").addEventListener("click", g1Check);
+document.getElementById("g1PrevEx").addEventListener("click", g1Prev);
+document.getElementById("g1NextEx").addEventListener("click", g1Next);
+
+/* =========================================================
+   GAME 2 (capital/no-cap when moved)
+========================================================= */
+const PRONOUNS_G2 = ["du","hien","hatt","mir","dir","si"];
+function makeExamplesG2(n=25){
+  const out=[];
+  while(out.length<n){
+    const verb = VERB_POOL[Math.floor(Math.random()*VERB_POOL.length)];
+    const pron = PRONOUNS_G2[Math.floor(Math.random()*PRONOUNS_G2.length)];
+    const gar = "gär";
+    let info = null;
+    if(INFO_MAP[verb]){
+      const arr = INFO_MAP[verb];
+      info = arr[Math.floor(Math.random()*arr.length)];
+    }
+    out.push({pron, verb, gar, info});
+  }
+  return out;
+}
+let invOrder = shuffle(makeExamplesG2(25));
+let invPos = 0;
+let invCurrent = null;
+let invModeGiven = "AFF";
+let invNeedInfo = false;
+let invPlaced = {}; // slot -> {token,srcId}
+
+function invVerbForm(pron, nextWord){
+  const pk = toPersonKeyFromPron(pron);
+  const base = conjBaseAll(invCurrent.verb)[pk];
+  return applyNRule(base, nextWord);
+}
+function invTopStructure(){
+  const pron = invCurrent.pron;
+  const hasInfo = invNeedInfo;
+
+  if(invModeGiven==="AFF"){
+    const subj = cap1(pron);
+    const verb = lower1(invVerbForm(pron, invCurrent.gar));
+    const base = [
+      {token:"SUBJ", cls:"subj", text:subj},
+      {token:"VERB", cls:"verb", text:verb},
+      {token:"GAR",  cls:"gar",  text:invCurrent.gar}
+    ];
+    if(hasInfo) base.push({token:"INFO", cls:"info", text:invCurrent.info});
+    return base;
+  }else{
+    const verb = cap1(invVerbForm(pron, pron));
+    const subj = pron.toLowerCase();
+    const base = [
+      {token:"VERB", cls:"verb", text:verb},
+      {token:"SUBJ", cls:"subj", text:subj},
+      {token:"GAR",  cls:"gar",  text:invCurrent.gar}
+    ];
+    if(hasInfo) base.push({token:"INFO", cls:"info", text:invCurrent.info});
+    return base;
+  }
+}
+function invTargetStructure(){
+  const targetIsQuestion = (invModeGiven==="AFF");
+  const pron = invCurrent.pron;
+  const hasInfo = invNeedInfo;
+
+  if(targetIsQuestion){
+    return [
+      {token:"VERB", cls:"verb"},
+      {token:"SUBJ", cls:"subj"},
+      {token:"GAR",  cls:"gar"},
+      ...(hasInfo ? [{token:"INFO", cls:"info"}] : [])
+    ];
+  }else{
+    return [
+      {token:"SUBJ", cls:"subj"},
+      {token:"VERB", cls:"verb"},
+      {token:"GAR",  cls:"gar"},
+      ...(hasInfo ? [{token:"INFO", cls:"info"}] : [])
+    ];
+  }
+}
+function invTopPunct(){ return invModeGiven==="AFF" ? "." : "?"; }
+function invBottomPunct(){ return invModeGiven==="AFF" ? "?" : "."; }
+
+function invTransformForTarget(token){
+  const targetIsQuestion = (invModeGiven==="AFF");
+  const pron = invCurrent.pron;
+
+  if(targetIsQuestion){
+    if(token==="VERB") return cap1(invVerbForm(pron, pron));  // verb first = capital
+    if(token==="SUBJ") return pron.toLowerCase();            // subject after = no capital
+    if(token==="GAR")  return invCurrent.gar;
+    if(token==="INFO") return invCurrent.info;
+  }else{
+    if(token==="SUBJ") return cap1(pron);                    // subject first = capital
+    if(token==="VERB") return lower1(invVerbForm(pron, invCurrent.gar)); // verb second = no cap
+    if(token==="GAR")  return invCurrent.gar;
+    if(token==="INFO") return invCurrent.info;
+  }
+  return "";
+}
+
+function invClearSlot(slotIndex){
+  const pill = document.querySelector(`#invBottomRow .wordPill[data-slot="${slotIndex}"]`);
+  if(!pill || !pill.classList.contains("filled")) return;
+
+  const srcId = invPlaced[slotIndex]?.srcId;
+  if(srcId) unuseBankPill("#invTopRow", srcId);
+
+  pill.classList.remove("filled","subj","verb","gar","info");
+  pill.classList.add("drop");
+  pill.textContent = String(slotIndex);
+  delete invPlaced[slotIndex];
+  clearFb("invFb");
+}
+
+function invRender(){
+  invCurrent = invOrder[invPos];
+  invNeedInfo = !!invCurrent.info;
+  invModeGiven = (Math.random()<0.5) ? "AFF" : "Q";
+  document.getElementById("invProg").textContent = `${invPos+1} / ${invOrder.length}`;
+  clearFb("invFb");
+  invPlaced = {};
+  clearSelection();
+
+  const topRow = document.getElementById("invTopRow");
+  topRow.innerHTML = "";
+  invTopStructure().forEach((it, idx)=>{
+    const id = `inv_bank_${idx+1}`;
+    const st = makeStack({cls:it.cls, text:it.text, type:it.token, id, isBank:true}, idx+1);
+    const pill = st.querySelector(".wordPill");
+    pill.addEventListener("click", ()=>{
+      if(pill.classList.contains("used")) return;
+      selectBankPill("inv", pill);
+    });
+    topRow.appendChild(st);
+  });
+  topRow.appendChild(makePunctColumn(invTopPunct()));
+
+  const bottomRow = document.getElementById("invBottomRow");
+  bottomRow.innerHTML = "";
+  const targetStruct = invTargetStructure();
+  targetStruct.forEach((it, idx)=>{
+    const slotId = `inv_slot_${idx+1}`;
+    const st = makeStack({cls:it.cls, text:String(idx+1), type:"SLOT", id:slotId, isDrop:true}, idx+1);
+    const pill = st.querySelector(".wordPill");
+    pill.dataset.slot = String(idx+1);
+    pill.dataset.targetToken = it.token;
+
+    pill.addEventListener("click", ()=>{
+      // remove if filled + no selection
+      if(pill.classList.contains("filled") && !selected){
+        invClearSlot(idx+1);
+        return;
+      }
+
+      if(!selected || selected.game!=="inv") return;
+      if(pill.classList.contains("filled")) return;
+
+      // place WITHOUT capitals first (moved rule), then transform adds capitals only if slot is 1 in target
+      pill.classList.remove("subj","verb","gar","info");
+      pill.classList.add(selected.cls);
+
+      let initial = selected.text;
+      // strip initial capitals when moved
+      initial = lower1(initial);
+
+      pill.textContent = initial;
+      pill.classList.add("filled");
+      magic(pill);
+
+      invPlaced[idx+1] = { token:selected.type, srcId:selected.id };
+
+      selected.el.classList.add("used");
+      clearSelection();
+      clearFb("invFb");
+
+      setTimeout(()=>{ pill.textContent = invTransformForTarget(invPlaced[idx+1].token); }, 170);
+    });
+
+    bottomRow.appendChild(st);
+  });
+  bottomRow.appendChild(makePunctColumn(invBottomPunct()));
+}
+function invCheck(){
+  const required = invNeedInfo ? 4 : 3;
+  for(let i=1;i<=required;i++){
+    const el = document.querySelector(`#invBottomRow .wordPill[data-slot="${i}"]`);
+    if(!el || !el.classList.contains("filled")){
+      setFb("invFb","Fëll nach all d’Plazen aus.", false);
+      return;
+    }
+  }
+  let allOk = true;
+  for(let i=1;i<=required;i++){
+    const slotEl = document.querySelector(`#invBottomRow .wordPill[data-slot="${i}"]`);
+    const gotToken = invPlaced[i]?.token;
+    const expectedToken = slotEl.dataset.targetToken;
+    const ok = gotToken === expectedToken;
+    flash(slotEl, ok ? "flash-green":"flash-red");
+    if(!ok) allOk = false;
+  }
+  setFb("invFb", allOk ? "Richteg!" : "Nach net ganz. Probéier nach eng Kéier.", allOk);
+}
+function invPrev(){ invPos = (invPos + invOrder.length - 1) % invOrder.length; invRender(); }
+function invNext(){ invPos = (invPos + 1) % invOrder.length; invRender(); }
+
+document.getElementById("invResetBtn").addEventListener("click", invRender);
+document.getElementById("invCheckBtn").addEventListener("click", invCheck);
+document.getElementById("invPrevEx").addEventListener("click", invPrev);
+document.getElementById("invNextEx").addEventListener("click", invNext);
+
+/* =========================================================
+   GAME 3: FREE BUILDER (all pills visible, small, no frame)
+   - click placed slot to remove (always)
+========================================================= */
+const GIRL_NAMES = new Set(["Roxanne","Zoé","Lara","Jannat","Margaux","Melina","Hanna","Nandini","Naomi"]);
+const UNITEDZOAH = new Set(["u","n","i","t","e","d","z","o","a","h"]);
+const G3_NAMES = ["Ismael","Roxanne","Zoé","Kylian","Lara","Jannat","Maxime","Margaux","Louis-Guillaume","Exaucé","Melina","David","Mathias","Hanna","Nandini","Naomi","Denzel"];
+const G3_PRONOUNS = ["ech","du","hien","hatt","mir","dir","si"];
+const G3_ARTICLES = ["d'","de","den"];
+const G3_GAR = ["gär","net gär"];
+const G3_PUNCT = [".","?"];
+
+function expectedArticleForName(name){
+  if(GIRL_NAMES.has(name)) return "d'";
+  const first = (name||"").trim().charAt(0).toLowerCase();
+  return UNITEDZOAH.has(first) ? "den" : "de";
+}
+function isValidArticleNamePair(article, name){
+  if(!name) return false;
+  return (article||"").toLowerCase() === expectedArticleForName(name);
+}
+function isPronoun(s){ return G3_PRONOUNS.includes((s||"").toLowerCase()); }
+function isArticle(s){ return ["d'","de","den","D'","De","Den"].includes((s||"").trim()); }
+function isName(s){ return G3_NAMES.includes((s||"").trim()); }
+function isGar(s){ return ["gär","net gär"].includes((s||"").trim()); }
+function isPunct(s){ return s==="." || s==="?"; }
+
+let g3Slots = Array(8).fill(null); // {type,text,cls,meta}
+let g3Selected = null; // {type,text,cls,meta,el}
+
+function g3ClearSelection(){
+  if(g3Selected?.el) g3Selected.el.classList.remove("selected");
+  g3Selected = null;
+}
+function g3Select(el, token){
+  g3ClearSelection();
+  el.classList.add("selected");
+  g3Selected = {...token, el};
+}
+
+function g3BuildSentenceArea(){
+  const area = document.getElementById("g3SentenceArea");
+  area.innerHTML = "";
+  for(let i=0;i<8;i++){
+    const chip = document.createElement("div");
+    chip.className = "slotChip" + (g3Slots[i] ? " filled" : "");
+    chip.dataset.slot = String(i);
+    chip.textContent = g3Slots[i]?.text || "•";
+
+    if(g3Slots[i]){
+      const t = g3Slots[i].type;
+      chip.style.background = (t==="VERB") ? "var(--verb)"
+                       : (t==="GAR") ? "var(--gar)"
+                       : (t==="INFO") ? "var(--info)"
+                       : (t==="PUN") ? "rgba(255,255,255,.95)"
+                       : "var(--subj)";
+    }else{
+      chip.style.background = "rgba(255,255,255,.9)";
+    }
+
+    chip.addEventListener("click", ()=>{
+      const idx = Number(chip.dataset.slot);
+
+      // ALWAYS allow remove by clicking filled slot (even if selected)
+      if(g3Slots[idx] && (!g3Selected)){
+        g3Slots[idx] = null;
+        g3RefreshCaps();
+        g3BuildSentenceArea();
+        clearFb("g3Fb");
+        return;
+      }
+      if(g3Slots[idx] && g3Selected && !g3Selected.forceReplace){
+        // if a selection exists, second click removes first (simple)
+        g3Slots[idx] = null;
+        g3RefreshCaps();
+        g3BuildSentenceArea();
+        clearFb("g3Fb");
+        return;
+      }
+
+      if(!g3Selected) return;
+
+      g3Slots[idx] = {
+        type: g3Selected.type,
+        text: g3Selected.text,
+        cls: g3Selected.cls,
+        meta: g3Selected.meta || {}
+      };
+      magic(chip);
+      g3RefreshCaps();
+      g3BuildSentenceArea();
+      clearFb("g3Fb");
+    });
+
+    area.appendChild(chip);
+  }
+}
+
+/* Verb pill cycling */
+function g3VerbOptions(inf){
+  const base = conjBaseAll(inf);
+  const opts = [
+    {key:"inf", text:inf},
+    {key:"ech", text:base.ech},
+    {key:"du",  text:base.du},
+    {key:"hienhatt", text:base.hienhatt},
+    {key:"mir", text:base.mir},
+    {key:"dir", text:base.dir},
+    {key:"si",  text:base.si}
+  ];
+  const seen = new Set();
+  return opts.filter(o=>{ if(seen.has(o.text)) return false; seen.add(o.text); return true; });
+}
+
+function g3RenderBank(){
+  const bank = document.getElementById("g3BankRow");
+  bank.innerHTML = "";
+
+  const items = [];
+
+  G3_PRONOUNS.forEach(p=> items.push({type:"SUBJ", cls:"subj", text:p, meta:{kind:"pron"}}));
+  G3_ARTICLES.forEach(a=> items.push({type:"SUBJ", cls:"subj", text:a, meta:{kind:"art"}}));
+  G3_NAMES.forEach(n=> items.push({type:"SUBJ", cls:"subj", text:n, meta:{kind:"name"}}));
+
+  VERB_POOL.forEach(v=> items.push({type:"VERB", cls:"verb", text:v, meta:{inf:v}}));
+
+  G3_GAR.forEach(g=> items.push({type:"GAR", cls:"gar", text:g, meta:{}}));
+  ALL_INFO.forEach(info=> items.push({type:"INFO", cls:"info", text:info, meta:{}}));
+  G3_PUNCT.forEach(p=> items.push({type:"PUN", cls:"pun", text:p, meta:{}}));
+
+  shuffle(items).forEach((it, idx)=>{
+    const btn = document.createElement("div");
+    btn.className = `miniPill ${it.cls}`;
+    btn.textContent = it.text;
+
+    if(it.type==="VERB"){
+      const opts = g3VerbOptions(it.text);
+      btn.dataset.verbIndex = "0";
+      btn.dataset.verbInf = it.text;
+
+      btn.addEventListener("click", ()=>{
+        // cycle
+        let i = Number(btn.dataset.verbIndex || "0");
+        i = (i + 1) % opts.length;
+        btn.dataset.verbIndex = String(i);
+        btn.textContent = opts[i].text;
+
+        if(g3Selected?.el === btn){
+          g3Selected.text = btn.textContent;
+          g3Selected.meta = {inf: it.text, picked: btn.textContent};
+        }
+      });
+    }
+
+    btn.addEventListener("click", ()=>{
+      const token = {
+        type: it.type,
+        cls: it.cls,
+        text: btn.textContent,
+        meta: (it.type==="VERB") ? {inf: it.text, picked: btn.textContent} : it.meta
+      };
+      g3Select(btn, token);
+    });
+
+    bank.appendChild(btn);
+  });
+}
+
+/* Caps auto-adjust based on punctuation choice */
+function g3RefreshCaps(){
+  const punct = (g3Slots[7]?.text || "").trim();
+  const isQuestion = punct === "?";
+  const isAff = punct === ".";
+
+  function setSlotText(i, newText){
+    if(!g3Slots[i]) return;
+    g3Slots[i].text = newText;
+  }
+
+  if(isAff){
+    if(g3Slots[0] && g3Slots[0].type==="SUBJ"){
+      const low = g3Slots[0].text.toLowerCase();
+      if(low==="d'") setSlotText(0, "D'");
+      if(low==="de") setSlotText(0, "De");
+      if(low==="den") setSlotText(0, "Den");
+      if(G3_PRONOUNS.includes(low)) setSlotText(0, cap1(low));
+    }
+    if(g3Slots[1] && g3Slots[1].type==="VERB"){
+      setSlotText(1, lower1(g3Slots[1].text));
+    }
+  }
+  if(isQuestion){
+    if(g3Slots[0] && g3Slots[0].type==="VERB"){
+      setSlotText(0, cap1(g3Slots[0].text));
+    }
+    if(g3Slots[1] && g3Slots[1].type==="SUBJ"){
+      const low = g3Slots[1].text.toLowerCase();
+      if(low==="d'" || low==="de" || low==="den") setSlotText(1, low);
+      if(G3_PRONOUNS.includes(low)) setSlotText(1, low);
+    }
+  }
+  if(!isQuestion && !isAff){
+    for(let i=0;i<7;i++){
+      if(!g3Slots[i]) continue;
+      if(g3Slots[i].type!=="SUBJ") continue;
+      const low = g3Slots[i].text.toLowerCase();
+      if(G3_PRONOUNS.includes(low)) setSlotText(i, low);
+      if(low==="d'" || low==="de" || low==="den") setSlotText(i, low);
+    }
+  }
+}
+
+function inferInfFromChosenForm(form){
+  const f = form.toLowerCase();
+  for(const inf of VERB_POOL){
+    const all = conjBaseAll(inf);
+    const forms = [inf, all.ech, all.du, all.hienhatt, all.mir, all.dir, all.si].map(x=>String(x).toLowerCase());
+    if(forms.includes(f)) return inf;
+    const variants = forms.map(x=> x.endsWith("en") ? x.slice(0,-1) : x);
+    if(variants.includes(f)) return inf;
+  }
+  return null;
+}
+
+function g3Validate(){
+  clearFb("g3Fb");
+  const punct = norm(g3Slots[7]?.text);
+  if(!isPunct(punct)){
+    setFb("g3Fb","Setz zum Schluss . oder ? (lescht Plaz).", false);
+    return;
+  }
+
+  const words = [];
+  for(let i=0;i<7;i++){
+    if(g3Slots[i]) words.push({slot:i, ...g3Slots[i], text:norm(g3Slots[i].text)});
+  }
+  if(words.length < 3){
+    setFb("g3Fb","Subjekt + Verb + gär/net gär (+ Info).", false);
+    return;
+  }
+
+  const isQuestion = punct === "?";
+  const isAff = punct === ".";
+
+  function parseSubject(startIdx){
+    const t0 = words[startIdx];
+    if(!t0) return {ok:false, len:0, errors:["Subjekt feelt."]};
+
+    const w0 = t0.text;
+
+    if(isPronoun(w0)){
+      return {ok:true, len:1, personKey: toPersonKeyFromPron(w0.toLowerCase())};
+    }
+
+    if(isArticle(w0)){
+      const t1 = words[startIdx+1];
+      if(!t1) return {ok:false, len:0, errors:["Nom feelt no Artikel."]};
+      const name = t1.text;
+      if(!isName(name)) return {ok:false, len:0, errors:["Nom ass net an der Lëscht."]};
+      const art = w0.toLowerCase();
+      if(!isValidArticleNamePair(art, name)) return {ok:false, len:0, errors:["Falschen Artikel fir dësen Numm."]};
+      return {ok:true, len:2, personKey:"hienhatt", name};
+    }
+
+    if(isName(w0)){
+      return {ok:true, len:1, personKey:"hienhatt", name:w0};
+    }
+
+    return {ok:false, len:0, errors:["Subjekt = Pronomen oder (Artikel + Numm)."]};
+  }
+
+  function expectedVerb(inf, personKey, nextWord){
+    const base = conjBaseAll(inf)[personKey];
+    return applyNRule(base, nextWord);
+  }
+
+  let subj, verbToken, garToken, infoToken=null;
+
+  if(isAff){
+    subj = parseSubject(0);
+    if(!subj.ok){ setFb("g3Fb", subj.errors[0], false); return; }
+    const vi = subj.len;
+    verbToken = words[vi];
+    if(!verbToken || verbToken.type!=="VERB"){ setFb("g3Fb","Nom Subjekt muss e Verb kommen.", false); return; }
+    garToken = words[vi+1];
+    if(!garToken || !isGar(garToken.text)){ setFb("g3Fb","Nom Verb: gär / net gär.", false); return; }
+    infoToken = words[vi+2] || null;
+  }else{
+    verbToken = words[0];
+    if(!verbToken || verbToken.type!=="VERB"){ setFb("g3Fb","Bei enger Fro: Verb als éischt.", false); return; }
+    subj = parseSubject(1);
+    if(!subj.ok){ setFb("g3Fb", subj.errors[0], false); return; }
+    const gi = 1 + subj.len;
+    garToken = words[gi];
+    if(!garToken || !isGar(garToken.text)){ setFb("g3Fb","Nom Subjekt: gär / net gär.", false); return; }
+    infoToken = words[gi+1] || null;
+  }
+
+  const gotVerb = norm(verbToken.text);
+  const inf = verbToken.meta?.inf || inferInfFromChosenForm(gotVerb);
+  if(!inf){ setFb("g3Fb","Verb net erkannt.", false); return; }
+
+  const needs = !!INFO_MAP[inf];
+  if(needs && (!infoToken || infoToken.type!=="INFO")){
+    setFb("g3Fb","Dëse Verb brauch eng Informatioun.", false); return;
+  }
+  if(!needs && infoToken && infoToken.type==="INFO"){
+    setFb("g3Fb","Dëse Verb brauch keng Informatioun.", false); return;
+  }
+  if(needs && infoToken && !INFO_MAP[inf].includes(infoToken.text)){
+    setFb("g3Fb","Dës Informatioun passt net bei dëse Verb.", false); return;
+  }
+
+  const personKey = subj.personKey;
+  const nextWord = isAff ? garToken.text : (words[1]?.text || "");
+  const exp = expectedVerb(inf, personKey, nextWord);
+
+  if(gotVerb.toLowerCase() !== exp.toLowerCase()){
+    setFb("g3Fb","Verbform ass net richteg (och d’-n Regel).", false); return;
+  }
+
+  // cap rules
+  if(isQuestion && gotVerb.charAt(0) !== gotVerb.charAt(0).toUpperCase()){
+    setFb("g3Fb","Bei enger Fro: Verb grouss ufänken.", false); return;
+  }
+  if(isAff && gotVerb.charAt(0) !== gotVerb.charAt(0).toLowerCase()){
+    setFb("g3Fb","Am Saz: Verb kleng ufänken.", false); return;
+  }
+
+  setFb("g3Fb","Richteg! ✅", true);
+}
+
+function g3Reset(){
+  g3Slots = Array(8).fill(null);
+  g3ClearSelection();
+  clearFb("g3Fb");
+  g3BuildSentenceArea();
+}
+
+document.getElementById("g3Reset").addEventListener("click", g3Reset);
+document.getElementById("g3Check").addEventListener("click", g3Validate);
+
+function g3Init(){
+  g3Reset();
+  g3RenderBank();
+}
+
+/* =========================================================
+   NAV BETWEEN GAMES
+========================================================= */
+const games = [
+  {id:"game1", title:"1. Ausso bauen", tab:"tab1"},
+  {id:"game2", title:"2. Inversioun", tab:"tab2"},
+  {id:"game3", title:"3. Ech bauen selwer", tab:"tab3"}
+];
+let gameIndex = 0;
+
+function showGame(idx){
+  gameIndex = idx;
+  games.forEach((g,i)=>{
+    document.getElementById(g.id).classList.toggle("active", i===idx);
+    document.getElementById(g.tab).classList.toggle("active", i===idx);
+  });
+  document.getElementById("topTitle").textContent = games[idx].title;
+  clearSelection();
+  g3ClearSelection();
+}
+
+document.getElementById("tab1").addEventListener("click", ()=>showGame(0));
+document.getElementById("tab2").addEventListener("click", ()=>showGame(1));
+document.getElementById("tab3").addEventListener("click", ()=>showGame(2));
+
+document.getElementById("prevGame").addEventListener("click", ()=>{
+  showGame((gameIndex + games.length - 1) % games.length);
+});
+document.getElementById("nextGame").addEventListener("click", ()=>{
+  showGame((gameIndex + 1) % games.length);
+});
+
+/* ===================== INIT ===================== */
+g1Render();
+invRender();
+g3Init();
+showGame(0);
+</script>
+</body>
+</html>
 
