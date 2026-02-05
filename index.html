@@ -13,10 +13,8 @@
     }
 
     :root{
-      /* ===== P4 unified layout master ===== */
       --bg1:#E9DDF7;
       --bg2:#C9B3EE;
-
       --bar:#B8A3E8;
       --barBorder:#8E73D6;
 
@@ -28,8 +26,9 @@
       --r:18px;
 
       --iconArrow:"https://i.postimg.cc/k6VtHrh0/p4arrow.png";
+      --iconReset:"https://i.postimg.cc/KjLsxCrc/p4replay.png";
+      --iconCheck:"https://i.postimg.cc/QtN6K0L0/buttons-2.png";
 
-      /* game colors */
       --subj:#b7f0c8;
       --verb:#e6dcff;
       --gar:#ffd9c4;
@@ -56,7 +55,6 @@
       border-radius:999px;
       box-shadow:var(--shadow);
       padding:10px 12px;
-
       display:grid;
       grid-template-columns: 70px 1fr 70px;
       align-items:center;
@@ -81,7 +79,6 @@
       padding:0 6px;
     }
 
-    /* ===== page wrap + cards ===== */
     .wrap{
       width:min(1200px,96vw);
       margin:14px auto 26px;
@@ -90,6 +87,7 @@
       flex-direction:column;
       gap:14px;
     }
+
     .tabs{
       display:flex;
       gap:10px;
@@ -119,14 +117,12 @@
       box-shadow:var(--shadow);
       padding:clamp(12px,2.2vw,18px);
     }
-
     .instruction{
       text-align:center;
       font-size:clamp(1.2rem,2.2vw,1.6rem);
       line-height:1.2;
     }
 
-    /* ===== game board ===== */
     .board{
       margin-top:12px;
       background: rgba(255,255,255,.50);
@@ -216,11 +212,7 @@
       line-height:1;
       margin-top: 8px;
     }
-    .punctGhost{
-      width:38px;
-      height:44px;
-      opacity:0;
-    }
+    .punctGhost{ width:38px; height:44px; opacity:0; }
 
     .feedback{
       margin: 10px auto 0;
@@ -263,6 +255,25 @@
       gap:14px;
       flex-wrap:wrap;
     }
+
+    .iconBtn{
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      width:78px;
+      height:58px;
+      display:grid;
+      place-items:center;
+    }
+    .iconBtn:active{transform:scale(.98);}
+    .iconBtn img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.08));
+    }
+
     .btn{
       font-family:'Schoulschrëft', Arial, sans-serif;
       cursor:pointer;
@@ -294,26 +305,23 @@
       .stack{ min-width: 140px; }
       .btn{ font-size:1.25rem; padding:12px 18px; }
       .pill{ font-size:1.25rem; padding:10px 14px; }
+      .iconBtn{ width:70px; height:54px; }
     }
   </style>
 </head>
 
 <body>
-
   <div class="topBar">
     <button class="barBtn back" id="prevGame" aria-label="Viregt Spill">
       <img src="https://i.postimg.cc/k6VtHrh0/p4arrow.png" alt="">
     </button>
-
     <h1 class="barTitle" id="topTitle">1. Ausso bauen</h1>
-
     <button class="barBtn" id="nextGame" aria-label="Nächst Spill">
       <img src="https://i.postimg.cc/k6VtHrh0/p4arrow.png" alt="">
     </button>
   </div>
 
   <div class="wrap">
-
     <div class="tabs">
       <button class="tab active" id="tab1">1. Ausso bauen</button>
       <button class="tab" id="tab2">2. Inversioun</button>
@@ -335,8 +343,12 @@
         </div>
 
         <div class="controls">
-          <button class="btn" id="g1Reset">zerécksetzen</button>
-          <button class="btn" id="g1Check">Kontrolléieren</button>
+          <button class="iconBtn" id="g1Reset" aria-label="Reset">
+            <img src="https://i.postimg.cc/KjLsxCrc/p4replay.png" alt="">
+          </button>
+          <button class="iconBtn" id="g1Check" aria-label="Kontrolléieren">
+            <img src="https://i.postimg.cc/QtN6K0L0/buttons-2.png" alt="">
+          </button>
           <button class="btn primary" id="g1Next">Nächst Beispill</button>
           <div class="pill" id="g1Prog">1 / 30</div>
         </div>
@@ -348,7 +360,7 @@
       <div class="card">
         <div class="instruction">
           Verwandel de Saz an eng Fro oder d'Fro an e Saz.
-          <br><strong>
+          <br><strong>Nëmmen “gär”</strong> – klick & placéieren. (Feeler si méiglech – eréischt “Kontrolléieren” weist et.)
         </div>
 
         <div class="board">
@@ -359,14 +371,17 @@
         </div>
 
         <div class="controls">
-          <button class="btn" id="invResetBtn">zerécksetzen</button>
-          <button class="btn" id="invCheckBtn">Kontrolléieren</button>
+          <button class="iconBtn" id="invResetBtn" aria-label="Reset">
+            <img src="https://i.postimg.cc/KjLsxCrc/p4replay.png" alt="">
+          </button>
+          <button class="iconBtn" id="invCheckBtn" aria-label="Kontrolléieren">
+            <img src="https://i.postimg.cc/QtN6K0L0/buttons-2.png" alt="">
+          </button>
           <button class="btn primary" id="invNextBtn">Nächst Beispill</button>
           <div class="pill" id="invProg">1 / 25</div>
         </div>
       </div>
     </section>
-
   </div>
 
 <script>
@@ -432,16 +447,25 @@ function conjBaseAll(inf){
   return { ech:st+"en", du:st+"s", hienhatt:st+"t", mir:st+"en", dir:st+"t", si:st+"en" };
 }
 
-/* ===================== -N RULE (ECH only) ===================== */
-function applyNRuleBeforeNextWord(echVerbForm, nextWord){
+/* ===================== -N RULE (applied to forms ending -en) ===================== */
+function applyNRule(form, nextWord){
+  const f = (form || "").trim();
   const next = (nextWord || "").trim().toLowerCase();
   const nextStartsWithN = next.startsWith("n");
-  if(echVerbForm.endsWith("en") && !nextStartsWithN) return echVerbForm.slice(0,-1);
-  return echVerbForm;
+  if(f.endsWith("en") && !nextStartsWithN) return f.slice(0,-1); // drop final n
+  return f;
 }
-function echFormWithRule(inf, garWord){
-  return applyNRuleBeforeNextWord(conjBaseAll(inf).ech, garWord);
-}
+
+/* ===================== VOCAB (from your pages) ===================== */
+/* verbs that REQUIRE information (page 57) */
+const INFO_MAP = {
+  spillen: ["Basket","Fussball","Gittar","Videospiller"],
+  fueren: ["Skateboard","Vëlo"],
+  lauschteren: ["Musek"],
+  kucken: ["Tëlee"],
+  maachen: ["Sport","Musek","Yoga"]
+};
+/* verbs that DO NOT take an info (page 58) are simply not in INFO_MAP */
 
 /* ===================== UI BUILDERS ===================== */
 function makeStack({cls,text,type,id,isBank=false,isDrop=false}, number, extraUnderText=null){
@@ -492,7 +516,7 @@ function makePunctColumn(punctChar){
 }
 
 /* ===================== CLICK & PLACE ENGINE ===================== */
-let selected = null; // {game, id, type, cls, text, formKey, el}
+let selected = null; // {game, type, cls, text, formKey, el, id}
 function clearSelection(){
   if(selected?.el) selected.el.classList.remove("selected");
   selected = null;
@@ -511,28 +535,13 @@ function selectBankPill(game, pillEl){
     el: pillEl
   };
 }
-function slotExpectedTypeFromSlotEl(slotEl){
-  return slotEl.dataset.expectedType || "";
-}
-function rejectSlot(slotEl, fbId){
-  flash(slotEl, "flash-red");
-  setFb(fbId, "Kuck: dat passt net an dës Këscht.", false);
-}
 
 /* =========================================================
    GAME 1: AUSSO BAUEN
-   - pronouns in bank are LOWERCASE
-   - once placed into slot 1 => capital appears
-   - click & place (no drag)
+   - subj in bank: lowercase
+   - when placed in slot 1: capital appears
+   - click & place
 ========================================================= */
-const INFO_MAP = {
-  maachen: ["Sport","Musek"],
-  lauschteren: ["Musek"],
-  kucken: ["Tëlee"],
-  spillen: ["Fussball","Basket"],
-  fueren: ["Skateboard","Vëlo"]
-};
-
 const PRONOUNS_G1 = ["ech","du","hien","hatt","mir","dir","si"];
 
 function toPersonKeyFromPron(pron){
@@ -543,7 +552,13 @@ function toPersonKeyFromPron(pron){
   if(pron==="si") return "si";
   return "hienhatt"; // hien / hatt
 }
-function pronDisplayCap(pron){ return cap1(pron); }
+
+function formWithNRuleForPron(inf, pron, nextWord){
+  const pk = toPersonKeyFromPron(pron);
+  const base = conjBaseAll(inf)[pk];
+  // Apply -n rule to any -en form (covers ech/mir/si + irregulars like fueren)
+  return applyNRule(base, nextWord);
+}
 
 function makeExamplesG1(n=30){
   const out=[];
@@ -565,41 +580,10 @@ function makeExamplesG1(n=30){
 let g1Order = shuffle(makeExamplesG1(30));
 let g1Pos = 0;
 let g1Current = null;
-let g1Placed = {}; // slot -> {type,text,formKey}
+let g1Placed = {}; // slot -> {type,text}
 
 function g1CorrectVerbText(){
-  const pk = toPersonKeyFromPron(g1Current.pron);
-  if(pk==="ech") return echFormWithRule(g1Current.verb, g1Current.gar);
-  return conjBaseAll(g1Current.verb)[pk];
-}
-
-function g1PlaceIntoSlot(slotEl, data){
-  if(slotEl.classList.contains("filled")) return;
-  const expected = slotExpectedTypeFromSlotEl(slotEl);
-  if(expected && data.type !== expected){
-    rejectSlot(slotEl, "g1Fb");
-    return;
-  }
-
-  // keep dropped colour
-  slotEl.classList.remove("subj","verb","gar","info");
-  slotEl.classList.add(data.cls);
-
-  let shownText = data.text;
-
-  // only when placed into slot 1: capital for pronoun
-  if(data.type === "SUBJ") shownText = cap1(data.text);
-
-  slotEl.textContent = shownText;
-  slotEl.classList.add("filled");
-  magic(slotEl);
-
-  const slotNum = Number(slotEl.dataset.slot);
-  g1Placed[slotNum] = { type:data.type, text:shownText, formKey:data.formKey || "" };
-
-  data.el.classList.add("used");
-  clearSelection();
-  clearFb("g1Fb");
+  return formWithNRuleForPron(g1Current.verb, g1Current.pron, g1Current.gar);
 }
 
 function g1Render(){
@@ -621,11 +605,27 @@ function g1Render(){
     const stack = makeStack({cls, text:String(i), type:expectedType, id:`g1_slot_${i}`, isDrop:true}, i);
     const pill = stack.querySelector(".wordPill");
     pill.dataset.slot = String(i);
-    pill.dataset.expectedType = expectedType;
 
     pill.addEventListener("click", ()=>{
       if(!selected || selected.game!=="g1") return;
-      g1PlaceIntoSlot(pill, selected);
+      if(pill.classList.contains("filled")) return;
+
+      // color follows selected word
+      pill.classList.remove("subj","verb","gar","info");
+      pill.classList.add(selected.cls);
+
+      let shown = selected.text;
+      if(selected.type==="SUBJ") shown = cap1(shown); // capital only after placing
+
+      pill.textContent = shown;
+      pill.classList.add("filled");
+      magic(pill);
+
+      g1Placed[i] = { type:selected.type, text:shown };
+
+      selected.el.classList.add("used");
+      clearSelection();
+      clearFb("g1Fb");
     });
 
     slotsRow.appendChild(stack);
@@ -638,16 +638,19 @@ function g1Render(){
 
   const baseAll = conjBaseAll(g1Current.verb);
   const correctVerb = g1CorrectVerbText();
-  const echBase = conjBaseAll(g1Current.verb).ech;
-  const echAlwaysDropN = (echBase.endsWith("en")) ? echBase.slice(0,-1) : echBase;
 
+  // options after infinitive
   const verbOptionsAfter = [
     {key:"correct", text: correctVerb},
-    {key:"ech_drop", text: echAlwaysDropN},
-    {key:"du", text: baseAll.du},
-    {key:"hienhatt", text: baseAll.hienhatt},
-    {key:"dir", text: baseAll.dir}
+    {key:"du", text: applyNRule(baseAll.du, g1Current.gar)},
+    {key:"hienhatt", text: applyNRule(baseAll.hienhatt, g1Current.gar)},
+    {key:"mir", text: applyNRule(baseAll.mir, g1Current.gar)},
+    {key:"dir", text: applyNRule(baseAll.dir, g1Current.gar)},
+    {key:"si", text: applyNRule(baseAll.si, g1Current.gar)},
+    // keep also the raw base as a “tempting wrong” option
+    {key:"raw", text: baseAll[toPersonKeyFromPron(g1Current.pron)]}
   ];
+
   const seen = new Set();
   const afterOpts = verbOptionsAfter.filter(o=>{
     if(seen.has(o.text)) return false;
@@ -656,8 +659,7 @@ function g1Render(){
   });
 
   const items = [];
-  // SUBJECT IN BANK: lowercase (tweak #1)
-  items.push({cls:"subj", type:"SUBJ", id:"g1_bank_subj", text: g1Current.pron});
+  items.push({cls:"subj", type:"SUBJ", id:"g1_bank_subj", text:g1Current.pron}); // lowercase in bank
   items.push({cls:"verb", type:"VERB", id:"g1_bank_verb", text:g1Current.verb, verbOptsAfter: afterOpts});
   items.push({cls:"gar", type:"GAR", id:"g1_bank_gar", text:g1Current.gar});
   if(needInfo) items.push({cls:"info", type:"INFO", id:"g1_bank_info", text:g1Current.info});
@@ -669,23 +671,22 @@ function g1Render(){
       (it.type==="VERB") ? "klick fir d’Formen" : null
     );
     const pill = stack.querySelector(".wordPill");
+
+    // select on click
     pill.addEventListener("click", ()=>{
       if(pill.classList.contains("used")) return;
-      // refresh live text (verb might have been clicked/cycled before selecting)
       selectBankPill("g1", pill);
     });
 
     if(it.type==="VERB"){
-      pill.dataset.optIndex = "-1";  // -1 = infinitive
+      pill.dataset.optIndex = "-1";
       pill.dataset.formKey = "inf";
 
-      pill.addEventListener("click", (e)=>{
-        // short-circuit: if you click verb while selected, we still want cycling to be possible
-        // so we allow both: cycle + selection stays on that pill
+      pill.addEventListener("click", ()=>{
         if(pill.classList.contains("used")) return;
 
         let i = Number(pill.dataset.optIndex || "-1");
-        i = (i + 1);
+        i = i + 1;
         if(i >= it.verbOptsAfter.length) i = -1;
         pill.dataset.optIndex = String(i);
 
@@ -728,7 +729,7 @@ function g1Check(){
   const s3 = document.querySelector(`#g1SlotsRow .wordPill[data-slot="3"]`);
   const s4 = document.querySelector(`#g1SlotsRow .wordPill[data-slot="4"]`);
 
-  const ok1 = g1Placed[1]?.type==="SUBJ" && g1Placed[1]?.text===pronDisplayCap(g1Current.pron);
+  const ok1 = g1Placed[1]?.type==="SUBJ" && g1Placed[1]?.text===cap1(g1Current.pron);
   const ok2 = g1Placed[2]?.type==="VERB" && g1Placed[2]?.text===expectedVerb;
   const ok3 = g1Placed[3]?.type==="GAR"  && g1Placed[3]?.text===g1Current.gar;
   const ok4 = !needInfo || (g1Placed[4]?.type==="INFO" && g1Placed[4]?.text===g1Current.info);
@@ -750,13 +751,15 @@ document.getElementById("g1Next").addEventListener("click", ()=>{
 });
 
 /* =========================================================
-   GAME 2: INVERSIOUN
-   - always "gär"
-   - all pronouns except "ech"
-   - click & place
-   - only capitals change between Q/A (structure inverts)
+   GAME 2: INVERSIOUN (FIXED)
+   - vocab: ONLY page 57 infos; page 58 verbs have no info
+   - -n rule applied (question + affirmative)
+   - allows incorrect placements (NO blocking)
+   - check only via "Kontrolléieren"
 ========================================================= */
-const PRONOUNS_G2 = ["du","hien","hatt","mir","dir","si"];
+const PRONOUNS_G2 = ["du","hien","hatt","mir","dir","si"]; // keep ech excluded
+
+function needsInfo(verb){ return !!INFO_MAP[verb]; }
 
 function makeExamplesG2(n=25){
   const out=[];
@@ -764,10 +767,10 @@ function makeExamplesG2(n=25){
     const verb = VERB_POOL[Math.floor(Math.random()*VERB_POOL.length)];
     const pron = PRONOUNS_G2[Math.floor(Math.random()*PRONOUNS_G2.length)];
     const gar = "gär";
-    let info = null;
 
-    if(INFO_MAP[verb] && Math.random()<0.75){
-      const arr=INFO_MAP[verb];
+    let info = null;
+    if(needsInfo(verb)){
+      const arr = INFO_MAP[verb];
       info = arr[Math.floor(Math.random()*arr.length)];
     }
     out.push({pron, verb, gar, info});
@@ -782,54 +785,70 @@ let invModeGiven = "AFF"; // "AFF" or "Q"
 let invNeedInfo = false;
 let invPlaced = {}; // slot -> {token}
 
-function invVerbForPron(pron){
+function invVerbForm(pron, nextWord){
   const pk = toPersonKeyFromPron(pron);
-  return conjBaseAll(invCurrent.verb)[pk];
+  const base = conjBaseAll(invCurrent.verb)[pk];
+  return applyNRule(base, nextWord);
 }
 
 function invTopStructure(){
   const pron = invCurrent.pron;
-  const verb = invVerbForPron(pron);
+  const hasInfo = invNeedInfo;
 
-  const pronAff = pronDisplayCap(pron);   // Du / Hien / ...
-  const verbAff = lower1(verb);          // spills
-  const verbQ   = cap1(verb);            // Spills
-  const pronQ   = pron.toLowerCase();    // du
-
-  const base = [
-    invModeGiven==="AFF"
-      ? {token:"SUBJ", cls:"subj", text:pronAff}
-      : {token:"VERB", cls:"verb", text:verbQ},
-    invModeGiven==="AFF"
-      ? {token:"VERB", cls:"verb", text:verbAff}
-      : {token:"SUBJ", cls:"subj", text:pronQ},
-    {token:"GAR", cls:"gar", text:invCurrent.gar}
-  ];
-  if(invNeedInfo) base.push({token:"INFO", cls:"info", text:invCurrent.info});
-  return base;
+  if(invModeGiven==="AFF"){
+    const subj = cap1(pron);
+    const verb = lower1(invVerbForm(pron, invCurrent.gar)); // next word = gär
+    const base = [
+      {token:"SUBJ", cls:"subj", text:subj},
+      {token:"VERB", cls:"verb", text:verb},
+      {token:"GAR",  cls:"gar",  text:invCurrent.gar}
+    ];
+    if(hasInfo) base.push({token:"INFO", cls:"info", text:invCurrent.info});
+    return base;
+  }else{
+    // Question: Verb first (Capital), then pronoun (lowercase)
+    const verbRaw = invVerbForm(pron, pron); // next word = pronoun
+    const verb = cap1(verbRaw);
+    const subj = pron.toLowerCase();
+    const base = [
+      {token:"VERB", cls:"verb", text:verb},
+      {token:"SUBJ", cls:"subj", text:subj},
+      {token:"GAR",  cls:"gar",  text:invCurrent.gar}
+    ];
+    if(hasInfo) base.push({token:"INFO", cls:"info", text:invCurrent.info});
+    return base;
+  }
 }
 
 function invTargetStructure(){
   const targetIsQuestion = (invModeGiven==="AFF");
   const pron = invCurrent.pron;
-  const verb = invVerbForPron(pron);
+  const hasInfo = invNeedInfo;
 
-  const pronAff = pronDisplayCap(pron);
-  const verbAff = lower1(verb);
-  const verbQ   = cap1(verb);
-  const pronQ   = pron.toLowerCase();
-
-  const base = [
-    targetIsQuestion
-      ? {token:"VERB", cls:"verb", text:verbQ}
-      : {token:"SUBJ", cls:"subj", text:pronAff},
-    targetIsQuestion
-      ? {token:"SUBJ", cls:"subj", text:pronQ}
-      : {token:"VERB", cls:"verb", text:verbAff},
-    {token:"GAR", cls:"gar", text:invCurrent.gar}
-  ];
-  if(invNeedInfo) base.push({token:"INFO", cls:"info", text:invCurrent.info});
-  return base;
+  if(targetIsQuestion){
+    // target question
+    const verbRaw = invVerbForm(pron, pron); // next word pronoun
+    const verb = cap1(verbRaw);
+    const subj = pron.toLowerCase();
+    const base = [
+      {token:"VERB", cls:"verb", text:verb},
+      {token:"SUBJ", cls:"subj", text:subj},
+      {token:"GAR",  cls:"gar",  text:invCurrent.gar}
+    ];
+    if(hasInfo) base.push({token:"INFO", cls:"info", text:invCurrent.info});
+    return base;
+  }else{
+    // target affirmative
+    const subj = cap1(pron);
+    const verb = lower1(invVerbForm(pron, invCurrent.gar)); // next word gär
+    const base = [
+      {token:"SUBJ", cls:"subj", text:subj},
+      {token:"VERB", cls:"verb", text:verb},
+      {token:"GAR",  cls:"gar",  text:invCurrent.gar}
+    ];
+    if(hasInfo) base.push({token:"INFO", cls:"info", text:invCurrent.info});
+    return base;
+  }
 }
 
 function invTopPunct(){ return invModeGiven==="AFF" ? "." : "?"; }
@@ -838,50 +857,34 @@ function invBottomPunct(){ return invModeGiven==="AFF" ? "?" : "."; }
 function invTransformForTarget(token){
   const targetIsQuestion = (invModeGiven==="AFF");
   const pron = invCurrent.pron;
-  const verb = invVerbForPron(pron);
 
-  if(token==="SUBJ") return targetIsQuestion ? pron.toLowerCase() : pronDisplayCap(pron);
-  if(token==="VERB") return targetIsQuestion ? cap1(verb) : lower1(verb);
-  if(token==="GAR")  return invCurrent.gar;
-  if(token==="INFO") return invCurrent.info;
-  return "";
-}
-
-function invPlace(slotEl, data){
-  if(slotEl.classList.contains("filled")) return;
-
-  const expected = slotExpectedTypeFromSlotEl(slotEl);
-  if(expected && data.type !== expected){
-    rejectSlot(slotEl, "invFb");
-    return;
+  if(targetIsQuestion){
+    if(token==="VERB"){
+      const verbRaw = invVerbForm(pron, pron);
+      return cap1(verbRaw);
+    }
+    if(token==="SUBJ") return pron.toLowerCase();
+    if(token==="GAR")  return invCurrent.gar;
+    if(token==="INFO") return invCurrent.info;
+  }else{
+    if(token==="SUBJ") return cap1(pron);
+    if(token==="VERB") return lower1(invVerbForm(pron, invCurrent.gar));
+    if(token==="GAR")  return invCurrent.gar;
+    if(token==="INFO") return invCurrent.info;
   }
-
-  slotEl.classList.remove("subj","verb","gar","info");
-  slotEl.classList.add(data.cls);
-
-  slotEl.classList.add("filled");
-  slotEl.textContent = data.text;
-  magic(slotEl);
-
-  setTimeout(()=>{ slotEl.textContent = invTransformForTarget(data.type); }, 170);
-
-  const slotNum = Number(slotEl.dataset.slot);
-  invPlaced[slotNum] = { token:data.type };
-
-  data.el.classList.add("used");
-  clearSelection();
-  clearFb("invFb");
+  return "";
 }
 
 function invRender(){
   invCurrent = invOrder[invPos];
-  invNeedInfo = !!invCurrent.info;
+  invNeedInfo = !!invCurrent.info; // strictly from INFO_MAP
   invModeGiven = (Math.random()<0.5) ? "AFF" : "Q";
   document.getElementById("invProg").textContent = `${invPos+1} / ${invOrder.length}`;
   clearFb("invFb");
   invPlaced = {};
   clearSelection();
 
+  // top bank row
   const topRow = document.getElementById("invTopRow");
   topRow.innerHTML = "";
   const topStruct = invTopStructure();
@@ -897,19 +900,38 @@ function invRender(){
   });
   topRow.appendChild(makePunctColumn(invTopPunct()));
 
+  // bottom slots row (NO expected-type blocking)
   const bottomRow = document.getElementById("invBottomRow");
   bottomRow.innerHTML = "";
   const targetStruct = invTargetStructure();
+
   targetStruct.forEach((it, idx)=>{
     const slotId = `inv_slot_${idx+1}`;
-    const st = makeStack({cls:it.cls, text:String(idx+1), type:it.token, id:slotId, isDrop:true}, idx+1);
+    const st = makeStack({cls:it.cls, text:String(idx+1), type:"SLOT", id:slotId, isDrop:true}, idx+1);
     const pill = st.querySelector(".wordPill");
     pill.dataset.slot = String(idx+1);
-    pill.dataset.expectedType = it.token;
+    pill.dataset.targetToken = it.token; // used only on check
 
     pill.addEventListener("click", ()=>{
       if(!selected || selected.game!=="inv") return;
-      invPlace(pill, selected);
+      if(pill.classList.contains("filled")) return;
+
+      // show chosen word first (can be wrong!)
+      pill.classList.remove("subj","verb","gar","info");
+      pill.classList.add(selected.cls);
+      pill.textContent = selected.text;
+      pill.classList.add("filled");
+      magic(pill);
+
+      const slotNum = Number(pill.dataset.slot);
+      invPlaced[slotNum] = { token:selected.type };
+
+      selected.el.classList.add("used");
+      clearSelection();
+      clearFb("invFb");
+
+      // transform ONLY capitals/structure, but keep the token identity for checking
+      setTimeout(()=>{ pill.textContent = invTransformForTarget(selected.type); }, 170);
     });
 
     bottomRow.appendChild(st);
@@ -928,13 +950,11 @@ function invCheck(){
     }
   }
 
-  const expected = invTargetStructure();
   let allOk = true;
-
   for(let i=1;i<=required;i++){
     const slotEl = document.querySelector(`#invBottomRow .wordPill[data-slot="${i}"]`);
     const gotToken = invPlaced[i]?.token;
-    const expectedToken = expected[i-1].token;
+    const expectedToken = slotEl.dataset.targetToken;
     const ok = gotToken === expectedToken;
     flash(slotEl, ok ? "flash-green":"flash-red");
     if(!ok) allOk = false;
@@ -969,7 +989,6 @@ function showGame(idx){
 
 document.getElementById("tab1").addEventListener("click", ()=>showGame(0));
 document.getElementById("tab2").addEventListener("click", ()=>showGame(1));
-
 document.getElementById("prevGame").addEventListener("click", ()=>{
   showGame((gameIndex + games.length - 1) % games.length);
 });
@@ -984,7 +1003,6 @@ showGame(0);
 </script>
 </body>
 </html>
-
 
 
 
