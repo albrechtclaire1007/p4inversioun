@@ -29,7 +29,7 @@
 
       --iconArrow:"https://i.postimg.cc/k6VtHrh0/p4arrow.png";
 
-      /* game colors (keep your logic colors, just harmonized) */
+      /* game colors */
       --subj:#b7f0c8;
       --verb:#e6dcff;
       --gar:#ffd9c4;
@@ -184,16 +184,22 @@
     .gar { background: var(--gar); }
     .info{ background: var(--info); }
 
-    .bankPill{ cursor:grab; }
+    /* CLICK & PLACE */
+    .bankPill{ cursor:pointer; }
     .bankPill:active{ transform: scale(.99); }
     .bankPill.used{ opacity:.25; filter:grayscale(.2); cursor:default; }
+    .bankPill.selected{
+      outline:6px solid rgba(142,115,214,.35);
+      outline-offset:2px;
+      transform: scale(1.01);
+    }
 
     .drop{
       border: 2px dashed var(--dash);
       background: rgba(255,255,255,.85);
+      cursor:pointer;
     }
-    .drop.over{ outline:4px solid rgba(142,115,214,.22); outline-offset:2px; }
-    .drop.filled{ border-style:solid; }
+    .drop.filled{ border-style:solid; cursor:default; }
 
     .punctCol{
       width:38px;
@@ -248,7 +254,7 @@
     .game{ display:none; }
     .game.active{ display:block; }
 
-    /* ===== controls go BELOW the game (general rule) ===== */
+    /* ===== controls BELOW the game ===== */
     .controls{
       margin-top:14px;
       display:flex;
@@ -317,8 +323,8 @@
     <section class="game active" id="game1">
       <div class="card">
         <div class="instruction">
-          Lies d’Wierder a bau eng <strong>Ausso</strong>. Zéi d'Sazdeeler an déi richteg Reiefolleg.
-          <br>Beim Verb: <strong>als éischt steet ëmmer den Infinitiv</strong>. Klick drop fir d’Konjugaisounen ze gesinn.
+          Lies d’Wierder a bau eng <strong>Ausso</strong>. <strong>Klick</strong> op d’Wierder a placéier se an d’Boxen.
+          <br>Beim Verb: <strong>als éischt steet ëmmer den Infinitiv</strong>. Klick drop fir d’Formen ze gesinn.
         </div>
 
         <div class="board">
@@ -328,9 +334,8 @@
           <div class="feedback" id="g1Fb"></div>
         </div>
 
-        <!-- controls BELOW -->
         <div class="controls">
-          <button class="btn" id="g1Reset">Reset</button>
+          <button class="btn" id="g1Reset">https://i.postimg.cc/KjLsxCrc/p4replay.png</button>
           <button class="btn" id="g1Check">Kontrolléieren</button>
           <button class="btn primary" id="g1Next">Nächst Beispill</button>
           <div class="pill" id="g1Prog">1 / 30</div>
@@ -342,8 +347,8 @@
     <section class="game" id="game2">
       <div class="card">
         <div class="instruction">
-          Lies de Saz a kuck der d'Sazdeeler un. Verwandel de Saz an eng Fro oder d'Fro an e Saz andeems du d'Sazdeeler op déi richteg Plaz zitts.
-          <br><strong></strong>
+          Verwandel de Saz an eng Fro oder d'Fro an e Saz.
+          <br><strong>Nëmmen “gär”</strong> – klick & placéieren (keng Drag&Drop).
         </div>
 
         <div class="board">
@@ -353,7 +358,6 @@
           <div class="feedback" id="invFb"></div>
         </div>
 
-        <!-- controls BELOW -->
         <div class="controls">
           <button class="btn" id="invResetBtn">Reset</button>
           <button class="btn" id="invCheckBtn">Kontrolléieren</button>
@@ -451,20 +455,6 @@ function makeStack({cls,text,type,id,isBank=false,isDrop=false}, number, extraUn
   pill.dataset.id = id;
   pill.dataset.cls = cls;
 
-  if(isBank){
-    pill.draggable = true;
-    pill.addEventListener("dragstart", (e)=>{
-      if(pill.classList.contains("used")) return e.preventDefault();
-      e.dataTransfer.setData("text/plain", JSON.stringify({
-        id,
-        type,
-        cls,
-        text: pill.textContent,
-        formKey: pill.dataset.formKey || ""
-      }));
-    });
-  }
-
   const num = document.createElement("div");
   num.className = "numCircle";
   num.textContent = String(number);
@@ -484,7 +474,6 @@ function makeStack({cls,text,type,id,isBank=false,isDrop=false}, number, extraUn
 
   return stack;
 }
-
 function makePunctColumn(punctChar){
   const col = document.createElement("div");
   col.className = "punctCol";
@@ -502,11 +491,39 @@ function makePunctColumn(punctChar){
   return col;
 }
 
+/* ===================== CLICK & PLACE ENGINE ===================== */
+let selected = null; // {game, id, type, cls, text, formKey, el}
+function clearSelection(){
+  if(selected?.el) selected.el.classList.remove("selected");
+  selected = null;
+}
+function selectBankPill(game, pillEl){
+  if(pillEl.classList.contains("used")) return;
+  clearSelection();
+  pillEl.classList.add("selected");
+  selected = {
+    game,
+    id: pillEl.dataset.id,
+    type: pillEl.dataset.type,
+    cls: pillEl.dataset.cls,
+    text: pillEl.textContent,
+    formKey: pillEl.dataset.formKey || "",
+    el: pillEl
+  };
+}
+function slotExpectedTypeFromSlotEl(slotEl){
+  return slotEl.dataset.expectedType || "";
+}
+function rejectSlot(slotEl, fbId){
+  flash(slotEl, "flash-red");
+  setFb(fbId, "Kuck: dat passt net an dës Këscht.", false);
+}
+
 /* =========================================================
    GAME 1: AUSSO BAUEN
-   - remove extras: am Park / doheem / mat Frënn
-   - use hien OR hatt (not hien/hatt)
-   - pronoun capital when placed (we do it everywhere, incl. bank display)
+   - pronouns in bank are LOWERCASE
+   - once placed into slot 1 => capital appears
+   - click & place (no drag)
 ========================================================= */
 const INFO_MAP = {
   maachen: ["Sport","Musek"],
@@ -524,23 +541,18 @@ function toPersonKeyFromPron(pron){
   if(pron==="mir") return "mir";
   if(pron==="dir") return "dir";
   if(pron==="si") return "si";
-  // hien OR hatt => same conjugation key
-  return "hienhatt";
+  return "hienhatt"; // hien / hatt
 }
-function pronDisplayCap(pron){
-  // always capital in sentences / when placed
-  return cap1(pron);
-}
+function pronDisplayCap(pron){ return cap1(pron); }
 
 function makeExamplesG1(n=30){
   const out=[];
   while(out.length<n){
     const verb = VERB_POOL[Math.floor(Math.random()*VERB_POOL.length)];
-    const gar = (Math.random()<0.5) ? "gär" : "net gär"; // keep in game 1
+    const gar = (Math.random()<0.5) ? "gär" : "net gär";
     const pron = PRONOUNS_G1[Math.floor(Math.random()*PRONOUNS_G1.length)];
     let info = null;
 
-    // only mapped info (no "am Park / doheem / mat Frënn")
     if(INFO_MAP[verb] && Math.random()<0.75){
       const arr=INFO_MAP[verb];
       info = arr[Math.floor(Math.random()*arr.length)];
@@ -561,11 +573,41 @@ function g1CorrectVerbText(){
   return conjBaseAll(g1Current.verb)[pk];
 }
 
+function g1PlaceIntoSlot(slotEl, data){
+  if(slotEl.classList.contains("filled")) return;
+  const expected = slotExpectedTypeFromSlotEl(slotEl);
+  if(expected && data.type !== expected){
+    rejectSlot(slotEl, "g1Fb");
+    return;
+  }
+
+  // keep dropped colour
+  slotEl.classList.remove("subj","verb","gar","info");
+  slotEl.classList.add(data.cls);
+
+  let shownText = data.text;
+
+  // only when placed into slot 1: capital for pronoun
+  if(data.type === "SUBJ") shownText = cap1(data.text);
+
+  slotEl.textContent = shownText;
+  slotEl.classList.add("filled");
+  magic(slotEl);
+
+  const slotNum = Number(slotEl.dataset.slot);
+  g1Placed[slotNum] = { type:data.type, text:shownText, formKey:data.formKey || "" };
+
+  data.el.classList.add("used");
+  clearSelection();
+  clearFb("g1Fb");
+}
+
 function g1Render(){
   g1Current = g1Order[g1Pos];
   document.getElementById("g1Prog").textContent = `${g1Pos+1} / ${g1Order.length}`;
   clearFb("g1Fb");
   g1Placed = {};
+  clearSelection();
 
   const needInfo = !!g1Current.info;
   const slotCount = needInfo ? 4 : 3;
@@ -579,21 +621,16 @@ function g1Render(){
     const stack = makeStack({cls, text:String(i), type:expectedType, id:`g1_slot_${i}`, isDrop:true}, i);
     const pill = stack.querySelector(".wordPill");
     pill.dataset.slot = String(i);
+    pill.dataset.expectedType = expectedType;
 
-    pill.addEventListener("dragover",(e)=>{ e.preventDefault(); pill.classList.add("over"); });
-    pill.addEventListener("dragleave",()=> pill.classList.remove("over"));
-    pill.addEventListener("drop",(e)=>{
-      e.preventDefault();
-      pill.classList.remove("over");
-      let data=null;
-      try{ data = JSON.parse(e.dataTransfer.getData("text/plain")); }catch(_){}
-      if(!data) return;
-      g1PlaceIntoSlot(pill, data);
+    pill.addEventListener("click", ()=>{
+      if(!selected || selected.game!=="g1") return;
+      g1PlaceIntoSlot(pill, selected);
     });
 
     slotsRow.appendChild(stack);
   }
-  slotsRow.appendChild(makePunctColumn(".")); // affirmative
+  slotsRow.appendChild(makePunctColumn("."));
 
   // BANK
   const bankRow = document.getElementById("g1BankRow");
@@ -604,7 +641,6 @@ function g1Render(){
   const echBase = conjBaseAll(g1Current.verb).ech;
   const echAlwaysDropN = (echBase.endsWith("en")) ? echBase.slice(0,-1) : echBase;
 
-  // Verb options after infinitive (deduped)
   const verbOptionsAfter = [
     {key:"correct", text: correctVerb},
     {key:"ech_drop", text: echAlwaysDropN},
@@ -620,7 +656,8 @@ function g1Render(){
   });
 
   const items = [];
-  items.push({cls:"subj", type:"SUBJ", id:"g1_bank_subj", text: pronDisplayCap(g1Current.pron)});
+  // SUBJECT IN BANK: lowercase (tweak #1)
+  items.push({cls:"subj", type:"SUBJ", id:"g1_bank_subj", text: g1Current.pron});
   items.push({cls:"verb", type:"VERB", id:"g1_bank_verb", text:g1Current.verb, verbOptsAfter: afterOpts});
   items.push({cls:"gar", type:"GAR", id:"g1_bank_gar", text:g1Current.gar});
   if(needInfo) items.push({cls:"info", type:"INFO", id:"g1_bank_info", text:g1Current.info});
@@ -632,12 +669,19 @@ function g1Render(){
       (it.type==="VERB") ? "klick fir d’Formen" : null
     );
     const pill = stack.querySelector(".wordPill");
+    pill.addEventListener("click", ()=>{
+      if(pill.classList.contains("used")) return;
+      // refresh live text (verb might have been clicked/cycled before selecting)
+      selectBankPill("g1", pill);
+    });
 
     if(it.type==="VERB"){
       pill.dataset.optIndex = "-1";  // -1 = infinitive
       pill.dataset.formKey = "inf";
 
-      pill.addEventListener("click", ()=>{
+      pill.addEventListener("click", (e)=>{
+        // short-circuit: if you click verb while selected, we still want cycling to be possible
+        // so we allow both: cycle + selection stays on that pill
         if(pill.classList.contains("used")) return;
 
         let i = Number(pill.dataset.optIndex || "-1");
@@ -652,37 +696,17 @@ function g1Render(){
           pill.textContent = it.verbOptsAfter[i].text;
           pill.dataset.formKey = it.verbOptsAfter[i].key;
         }
+
+        // keep selection synced
+        if(selected?.el === pill){
+          selected.text = pill.textContent;
+          selected.formKey = pill.dataset.formKey || "";
+        }
       });
     }
 
     bankRow.appendChild(stack);
   });
-}
-
-function g1PlaceIntoSlot(slotEl, data){
-  if(slotEl.classList.contains("filled")) return;
-
-  const src = document.querySelector(`#g1BankRow .bankPill[data-id="${data.id}"]`);
-  if(!src || src.classList.contains("used")) return;
-
-  slotEl.classList.remove("subj","verb","gar","info");
-  slotEl.classList.add(data.cls);
-
-  let shownText = data.text;
-
-  // Pronoun: ALWAYS capital when placed (your request)
-  if(data.type === "SUBJ") shownText = cap1(data.text);
-
-  slotEl.textContent = shownText;
-  slotEl.classList.add("filled");
-
-  const slotNum = Number(slotEl.dataset.slot);
-  g1Placed[slotNum] = { type:data.type, text:shownText, formKey:data.formKey || "" };
-
-  src.classList.add("used");
-  src.draggable = false;
-
-  clearFb("g1Fb");
 }
 
 function g1Check(){
@@ -727,13 +751,10 @@ document.getElementById("g1Next").addEventListener("click", ()=>{
 
 /* =========================================================
    GAME 2: INVERSIOUN
-   - ignore "net gär" => always "gär"
-   - use ALL pronouns EXCEPT "ech" (so it reads naturally)
-   - keep forms as-is; only change capitals between Q/A:
-        Q: Verb is Capital, pronoun is lowercase
-        A: Pronoun is Capital, verb is lowercase
-   - no "new" info like "an der Reen" / "laang" etc.
-   - info only from INFO_MAP (or none)
+   - always "gär"
+   - all pronouns except "ech"
+   - click & place
+   - only capitals change between Q/A (structure inverts)
 ========================================================= */
 const PRONOUNS_G2 = ["du","hien","hatt","mir","dir","si"];
 
@@ -769,10 +790,11 @@ function invVerbForPron(pron){
 function invTopStructure(){
   const pron = invCurrent.pron;
   const verb = invVerbForPron(pron);
-  const pronAff = pronDisplayCap(pron);         // Du / Hien / Hatt / Mir / Dir / Si
-  const verbAff = lower1(verb);                // spills / fiert / ...
-  const verbQ   = cap1(verb);                  // Spills / Fiert / ...
-  const pronQ   = pron.toLowerCase();          // du / hien / hatt / mir / dir / si
+
+  const pronAff = pronDisplayCap(pron);   // Du / Hien / ...
+  const verbAff = lower1(verb);          // spills
+  const verbQ   = cap1(verb);            // Spills
+  const pronQ   = pron.toLowerCase();    // du
 
   const base = [
     invModeGiven==="AFF"
@@ -813,6 +835,44 @@ function invTargetStructure(){
 function invTopPunct(){ return invModeGiven==="AFF" ? "." : "?"; }
 function invBottomPunct(){ return invModeGiven==="AFF" ? "?" : "."; }
 
+function invTransformForTarget(token){
+  const targetIsQuestion = (invModeGiven==="AFF");
+  const pron = invCurrent.pron;
+  const verb = invVerbForPron(pron);
+
+  if(token==="SUBJ") return targetIsQuestion ? pron.toLowerCase() : pronDisplayCap(pron);
+  if(token==="VERB") return targetIsQuestion ? cap1(verb) : lower1(verb);
+  if(token==="GAR")  return invCurrent.gar;
+  if(token==="INFO") return invCurrent.info;
+  return "";
+}
+
+function invPlace(slotEl, data){
+  if(slotEl.classList.contains("filled")) return;
+
+  const expected = slotExpectedTypeFromSlotEl(slotEl);
+  if(expected && data.type !== expected){
+    rejectSlot(slotEl, "invFb");
+    return;
+  }
+
+  slotEl.classList.remove("subj","verb","gar","info");
+  slotEl.classList.add(data.cls);
+
+  slotEl.classList.add("filled");
+  slotEl.textContent = data.text;
+  magic(slotEl);
+
+  setTimeout(()=>{ slotEl.textContent = invTransformForTarget(data.type); }, 170);
+
+  const slotNum = Number(slotEl.dataset.slot);
+  invPlaced[slotNum] = { token:data.type };
+
+  data.el.classList.add("used");
+  clearSelection();
+  clearFb("invFb");
+}
+
 function invRender(){
   invCurrent = invOrder[invPos];
   invNeedInfo = !!invCurrent.info;
@@ -820,6 +880,7 @@ function invRender(){
   document.getElementById("invProg").textContent = `${invPos+1} / ${invOrder.length}`;
   clearFb("invFb");
   invPlaced = {};
+  clearSelection();
 
   const topRow = document.getElementById("invTopRow");
   topRow.innerHTML = "";
@@ -827,6 +888,11 @@ function invRender(){
   topStruct.forEach((it, idx)=>{
     const id = `inv_bank_${idx+1}`;
     const st = makeStack({cls:it.cls, text:it.text, type:it.token, id, isBank:true}, idx+1);
+    const pill = st.querySelector(".wordPill");
+    pill.addEventListener("click", ()=>{
+      if(pill.classList.contains("used")) return;
+      selectBankPill("inv", pill);
+    });
     topRow.appendChild(st);
   });
   topRow.appendChild(makePunctColumn(invTopPunct()));
@@ -839,62 +905,16 @@ function invRender(){
     const st = makeStack({cls:it.cls, text:String(idx+1), type:it.token, id:slotId, isDrop:true}, idx+1);
     const pill = st.querySelector(".wordPill");
     pill.dataset.slot = String(idx+1);
+    pill.dataset.expectedType = it.token;
 
-    pill.addEventListener("dragover",(e)=>{ e.preventDefault(); pill.classList.add("over"); });
-    pill.addEventListener("dragleave",()=> pill.classList.remove("over"));
-    pill.addEventListener("drop",(e)=>{
-      e.preventDefault();
-      pill.classList.remove("over");
-      let data=null;
-      try{ data = JSON.parse(e.dataTransfer.getData("text/plain")); }catch(_){}
-      if(!data) return;
-      invPlace(pill, data);
+    pill.addEventListener("click", ()=>{
+      if(!selected || selected.game!=="inv") return;
+      invPlace(pill, selected);
     });
 
     bottomRow.appendChild(st);
   });
   bottomRow.appendChild(makePunctColumn(invBottomPunct()));
-}
-
-function invTransformForTarget(token){
-  const targetIsQuestion = (invModeGiven==="AFF");
-  const pron = invCurrent.pron;
-  const verb = invVerbForPron(pron);
-
-  if(token==="SUBJ"){
-    return targetIsQuestion ? pron.toLowerCase() : pronDisplayCap(pron);
-  }
-  if(token==="VERB"){
-    return targetIsQuestion ? cap1(verb) : lower1(verb);
-  }
-  if(token==="GAR")  return invCurrent.gar;
-  if(token==="INFO") return invCurrent.info;
-  return "";
-}
-
-function invPlace(slotEl, data){
-  if(slotEl.classList.contains("filled")) return;
-
-  const src = document.querySelector(`#invTopRow .bankPill[data-id="${data.id}"]`);
-  if(!src || src.classList.contains("used")) return;
-
-  slotEl.classList.remove("subj","verb","gar","info");
-  slotEl.classList.add(data.cls);
-
-  slotEl.classList.add("filled");
-  slotEl.textContent = data.text;
-  magic(slotEl);
-
-  // only change capitals / structure (no other transformation)
-  setTimeout(()=>{ slotEl.textContent = invTransformForTarget(data.type); }, 170);
-
-  const slotNum = Number(slotEl.dataset.slot);
-  invPlaced[slotNum] = { token:data.type };
-
-  src.classList.add("used");
-  src.draggable = false;
-
-  clearFb("invFb");
 }
 
 function invCheck(){
@@ -944,6 +964,7 @@ function showGame(idx){
     document.getElementById(g.tab).classList.toggle("active", i===idx);
   });
   document.getElementById("topTitle").textContent = games[idx].title;
+  clearSelection();
 }
 
 document.getElementById("tab1").addEventListener("click", ()=>showGame(0));
@@ -963,6 +984,7 @@ showGame(0);
 </script>
 </body>
 </html>
+
 
 
 
